@@ -1,8 +1,10 @@
 # Drive
 
-**Infrastructure management platform for Infinite Drive and beyond. Orchestrate services. Deploy nodes. Scale infrastructure.**
+**Open infrastructure management platform. Orchestrate services. Deploy nodes. Scale infrastructure.**
 
 > _A cypherpunk nation in cyberspace. Powered by improbability._
+
+Drive is an open infrastructure management platform designed for **Infinite Improbability Chain** and beyond. Orchestrate blockchain nodes, services, and infrastructure with a unified interface. Part of the **Infinite Drive** ecosystem and **Project 42**. Developed by [Deep Thought Labs](https://deep-thought.computer). For information about **Infinite Improbability Chain**, see the [Infinite repository](https://github.com/deep-thought-labs/infinite).
 
 ---
 
@@ -16,18 +18,6 @@
 | Graphical Interface        | ✅ Self-descriptive UI       |
 | Persistent Data            | ✅ Isolated per service      |
 | Docker Compose             | ✅ Standard workflow         |
-
----
-
-## Infinite Drive Network
-
-**Chain ID**: `infinite_421018-1`  
-**Token**: Improbability (TEA)  
-**Bech32**: `infinite`
-
-> _The drive runs on tea. Properly prepared._
-
-For more information about Infinite Drive, visit the [project repository](https://github.com/deep-thought-labs/infinite).
 
 ---
 
@@ -74,7 +64,7 @@ drive/
 │   ├── infinite-testnet/       # Infinite Testnet blockchain node
 │   │   ├── docker-compose.yml
 │   │   └── persistent-data/
-│   └── [other-services]/       # Future services (DNS, web servers, etc.)
+│   └── [other-services]/       # Additional blockchains, services, and infrastructure
 ├── docs/                        # User documentation
 └── README.md                    # This file
 ```
@@ -85,7 +75,7 @@ drive/
 
 ### Infinite Mainnet
 
-Full blockchain node for the Infinite Drive mainnet network.
+Full blockchain node for **Infinite Improbability Chain** mainnet network.
 
 **Location:** `drive/services/infinite-mainnet/`
 
@@ -98,7 +88,7 @@ docker compose exec infinite-mainnet node-ui
 
 ### Infinite Testnet
 
-Full blockchain node for the Infinite Drive testnet network.
+Full blockchain node for **Infinite Improbability Chain** testnet network.
 
 **Location:** `drive/services/infinite-testnet/`
 
@@ -145,24 +135,27 @@ Each service maintains its own:
 
 ## Architecture
 
-Drive is designed as a **service orchestrator** that:
+Drive is designed as an **open service orchestrator** that:
 
 - **Isolates services** - Each service runs independently
 - **Manages resources** - Each service can have different resource limits
 - **Simplifies deployment** - Standard Docker Compose workflow
 - **Enables scaling** - Easy to add new services or duplicate existing ones
+- **Multi-blockchain ready** - Extensible architecture supports any blockchain or service
 
 ---
 
 ## Adding New Services
 
-To add a new service:
+Drive's open architecture allows you to add any blockchain node or service. To add a new service:
 
 1. Create a new directory under `drive/services/`
 2. Copy `docker-compose.yml` from an existing service as a template
 3. Modify environment variables and configuration as needed
 4. Update the service name and container name to be unique
 5. Create a `persistent-data/` directory (will be git-ignored automatically)
+
+Whether it's another blockchain, a database, a web service, or any containerized application, Drive provides the same unified management interface.
 
 **Example structure:**
 ```
@@ -188,22 +181,25 @@ The `persistent-data/` directory structure is automatically ignored by Git using
 ## Community
 
 - **Project**: [infinitedrive.xyz](https://infinitedrive.xyz)
-- **Lab**: [deep-thought.computer](https://deep-thought.computer)
+- **Lab**: [Deep Thought Labs](https://deep-thought.computer) - Research laboratory developing Infinite Drive
 - **X**: [@DeepThought_Lab](https://x.com/DeepThought_Lab)
 - **Telegram**: Deep Thought Labs
+- **Blockchain**: [Infinite Improbability Chain](https://github.com/deep-thought-labs/infinite) - Main repository
+- **Client**: [Drive](https://github.com/deep-thought-labs/drive) - Infrastructure management client (this repository)
 - **Docs**: [Getting Started with Infinite Drive](https://github.com/deep-thought-labs/infinite)
-- **Repository**: [deep-thought-labs/infinite](https://github.com/deep-thought-labs/infinite)
 
 ---
 
 ## Contributing
 
-This is an independent repository for infrastructure management. When contributing:
+Drive is an open infrastructure management platform, designed for **Infinite Improbability Chain** and extensible to any blockchain or service. Part of the **Infinite Drive** ecosystem and **Project 42**. When contributing:
 
 1. Follow the service structure conventions
 2. Document new services in the `docs/` directory
 3. Ensure each service is self-contained
 4. Update this README when adding new service types
+
+For contributions to **Infinite Improbability Chain** itself, see the [Infinite repository](https://github.com/deep-thought-labs/infinite).
 
 ---
 
@@ -219,4 +215,4 @@ For issues, questions, or contributions, please refer to the [documentation](doc
 
 ---
 
-_Project 42. The answer was always infrastructure._
+_Part of Project 42. Building infrastructure for the cypherpunk nation. A [Deep Thought Labs](https://deep-thought.computer) project._
