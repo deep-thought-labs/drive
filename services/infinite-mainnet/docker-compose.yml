@@ -1,11 +1,7 @@
 services:
   infinite-mainnet:
-    # Core service settings (build, image, name, user, restart) - not expected to be modified by users
-    build:
-      context: .
-      dockerfile: Dockerfile
-
-    image: infinite-drive:latest
+    # Core service settings (image, name, user, restart) - not expected to be modified by users
+    image: deepthoughtlabs/infinite-drive:latest
     container_name: infinite-mainnet
     user: "1000:1000"
     restart: unless-stopped
