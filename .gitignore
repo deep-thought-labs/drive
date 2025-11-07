@@ -1,0 +1,27 @@
+# Persistent data directory (ignore all contents except README and .gitkeep in any location)
+# This pattern matches persistent-data folders at any depth
+**/persistent-data/*
+!**/persistent-data/README.md
+!**/persistent-data/.gitkeep
+
+# Logs
+*.log
+
+# Archivos temporales de Docker (pero .dockerignore debe versionarse)
+# .dockerignore
+
+# Variables de entorno (si se agregan en el futuro)
+.env
+.env.local
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
