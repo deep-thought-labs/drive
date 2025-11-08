@@ -28,12 +28,21 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 - Docker (20.10+)
 - Docker Compose (1.29+)
 
+### Clone the Repository
+
+First, clone the Drive repository to your local machine:
+
+```bash
+git clone https://github.com/deep-thought-labs/drive.git
+cd drive
+```
+
 ### Run a Node (Easiest Method)
 
 The easiest way to manage your node is through the built-in graphical interface:
 
 ```bash
-cd drive/services/infinite-mainnet
+cd services/infinite-mainnet
 docker compose up -d
 docker compose exec infinite-mainnet node-ui
 ```
@@ -45,7 +54,7 @@ The graphical interface provides visual menus for all operations - no command me
 ### Command Line (Advanced)
 
 ```bash
-cd drive/services/infinite-mainnet
+cd services/infinite-mainnet
 docker compose up -d
 docker compose exec infinite-mainnet node-init
 docker compose exec infinite-mainnet node-start
@@ -81,7 +90,7 @@ Full blockchain node for **Infinite Improbability Chain** mainnet network.
 
 **Quick Commands:**
 ```bash
-cd drive/services/infinite-mainnet
+cd services/infinite-mainnet
 docker compose up -d
 docker compose exec infinite-mainnet node-ui
 ```
@@ -117,11 +126,11 @@ Each service is completely independent. Run multiple services simultaneously:
 
 ```bash
 # Mainnet node
-cd drive/services/infinite-mainnet
+cd services/infinite-mainnet
 docker compose up -d
 
 # Testnet node (in another terminal)
-cd drive/services/infinite-testnet
+cd services/infinite-testnet
 docker compose up -d
 ```
 

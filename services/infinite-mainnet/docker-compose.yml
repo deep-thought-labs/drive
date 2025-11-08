@@ -62,45 +62,10 @@ services:
       # format using domain names: "id@domain.com:port" or "id@subdomain.domain.com:port"
       # When using multiple seeds, use a comma to separate them: "id1@ip1:port,id2@example.com:port,id3@ip3:port"
       #
-      # example: NODE_P2P_SEEDS: "77d4b2346a80d423dda12d1b738519c2b40a8f5d@seed1.infinitedrive.xyz:26656"
+      # example: NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@seed1.infinitedrive.xyz:26656"
       #
       # (required for initial connection)
-      NODE_P2P_SEEDS: "77d4b2346a80d423dda12d1b738519c2b40a8f5d@66.70.178.128:26656" 
-
-      # Persistent peers for stable connections
-      #
-      # The format and usage of NODE_PERSISTENT_PEERS is exactly the same as NODE_P2P_SEEDS:
-      #   "id@ip:port", "id@domain.com:port" or multiple nodes separated by commas,
-      #   e.g. "id1@ip1:port,id2@domain.com:port"
-      #
-      # The key difference is in functionality:
-      #   - Persistent peers are trusted, healthy nodes that your node will attempt to stay permanently connected to.
-      #   - This is optional: you do NOT need to add persistent peers; please investigate and add if needed for your case.
-      #
-      # (optional, uncomment and set if needed)
-      # NODE_PERSISTENT_PEERS: ""
-
-      # External address for P2P discovery (useful if your node is behind NAT/firewall)
-      #
-      # Set this if you want your node to be reachable by other peers in the network.
-      # For example, if your node has a public/static IP address or you have set up a domain name that points to your node,
-      # you should specify that address here so other nodes can find and connect to you.
-      #
-      # This is the address where your node can be discovered on the P2P network.
-      #
-      # Format: "ip:port" or "domain.com:port" or "subdomain.domain.com:port"
-      # Note: use the P2P HOST_PORT set in the ports section.
-      #
-      # Example:
-      #   NODE_P2P_EXTERNAL_ADDRESS: "203.0.113.50:26656" (your public IP address)
-      #   NODE_P2P_EXTERNAL_ADDRESS: "yourdomain.com:26656"
-      #
-      # By setting this, other users can easily add your node to their own NODE_P2P_SEEDS list 
-      # (seed1.infinitedrive.xyz:26656 is the external address of the seed node that we are using on NODE_P2P_SEEDS). 
-      # This helps grow and strengthen the network!
-      #
-      # (Optional — uncomment and set only if your node should be publicly accessible)
-      # NODE_P2P_EXTERNAL_ADDRESS: ""
+      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656" 
 
     ### End environment variables
   ### End service infinite-mainnet
