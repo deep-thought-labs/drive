@@ -23,66 +23,16 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 
 ## Quick Start
 
-### Prerequisites
+To get started with Drive, follow the complete [Quick Start Guide](docs/quick-start.md) which includes:
 
-- Docker (20.10+)
-- Docker Compose (1.29+)
+- **Prerequisites** - Git, Docker, and Docker Compose installation instructions for macOS, Linux, and Windows
+- **Firewall Configuration** - Step-by-step instructions for opening required ports on all supported systems
+- **Repository Setup** - How to clone and navigate the repository
+- **Node Initialization** - Complete guide for setting up validator or simple nodes
+- **Graphical Interface** - Using the built-in TUI for easy node management
+- **Command Line Operations** - Advanced commands for automation
 
-**Important Note on Docker Permissions (Linux):**
-- You may need to add your user to the `docker` group to run Docker commands without `sudo`
-- The `drive.sh` script works with or without `sudo`, but Docker itself requires `sudo` if your user is not in the docker group
-- To configure: `sudo usermod -aG docker $USER` (then log out and log back in)
-- See [Quick Start Guide](docs/quick-start.md) for complete Docker installation instructions
-
-**Important Note on Firewall Configuration:**
-- **Required:** You must open the P2P port in your system's firewall for your node to participate in the network
-  - Mainnet P2P: `26656` (required)
-  - Testnet P2P: `26666` (required)
-- **Optional:** RPC port is only needed if you want external API access
-  - Mainnet RPC: `26657` (optional)
-  - Testnet RPC: `26667` (optional)
-- See [Quick Start Guide](docs/quick-start.md) for firewall configuration instructions for macOS, Linux, and Windows
-- See [Port Allocation Strategy](docs/PORT_ALLOCATION.md) for complete port information
-
-### Clone the Repository
-
-First, clone the Drive repository to your local machine:
-
-```bash
-git clone https://github.com/deep-thought-labs/drive.git
-cd drive
-```
-
-### Run a Node (Easiest Method)
-
-The easiest way to manage your node is through the built-in graphical interface:
-
-```bash
-cd services/infinite-mainnet
-./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
-```
-
-**Note:** 
-- Use `./drive.sh` instead of `docker compose` for container management commands (up, down, ps, etc.)
-- The script automatically handles permissions and works with or without `sudo`
-- **If Docker requires `sudo`** (user not in docker group), use `sudo ./drive.sh` instead
-- For commands inside the container (`exec`), use `docker compose exec` directly
-
-The graphical interface provides visual menus for all operations - no command memorization needed.
-
-**Full Guide** → [Quick Start](docs/quick-start.md)
-
-### Command Line (Advanced)
-
-```bash
-cd services/infinite-mainnet
-./drive.sh up -d
-docker compose exec infinite-mainnet node-init
-docker compose exec infinite-mainnet node-start
-```
-
-**Why use `./drive.sh`?** It automatically configures correct user permissions, preventing volume permission errors. See [Container Management](docs/container-management.md) for details.
+**Start here:** [Quick Start Guide](docs/quick-start.md)
 
 ---
 
@@ -114,14 +64,7 @@ Full blockchain node for **Infinite Improbability Chain** mainnet network.
 
 **Location:** `drive/services/infinite-mainnet/`
 
-**Quick Commands:**
-```bash
-cd services/infinite-mainnet
-./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
-```
-
-**Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
+**Getting Started:** See the [Quick Start Guide](docs/quick-start.md) for complete setup instructions.
 
 ### Infinite Testnet
 
