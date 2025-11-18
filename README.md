@@ -34,6 +34,16 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 - To configure: `sudo usermod -aG docker $USER` (then log out and log back in)
 - See [Quick Start Guide](docs/quick-start.md) for complete Docker installation instructions
 
+**Important Note on Firewall Configuration:**
+- **Required:** You must open the P2P port in your system's firewall for your node to participate in the network
+  - Mainnet P2P: `26656` (required)
+  - Testnet P2P: `26666` (required)
+- **Optional:** RPC port is only needed if you want external API access
+  - Mainnet RPC: `26657` (optional)
+  - Testnet RPC: `26667` (optional)
+- See [Quick Start Guide](docs/quick-start.md) for firewall configuration instructions for macOS, Linux, and Windows
+- See [Port Allocation Strategy](docs/PORT_ALLOCATION.md) for complete port information
+
 ### Clone the Repository
 
 First, clone the Drive repository to your local machine:

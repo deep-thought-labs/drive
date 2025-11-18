@@ -99,6 +99,279 @@ docker compose version
 
 </details>
 
+### Configuring Firewall Ports
+
+**Important:** For your node to participate in the blockchain network, you need to open the P2P port (and optionally the RPC port) in your system's firewall. This allows other nodes to connect to your node.
+
+**Required Ports:**
+- **P2P Port** (required): Used for peer-to-peer network communication
+  - Mainnet: `26656`
+  - Testnet: `26666`
+  - See [Port Allocation Strategy](PORT_ALLOCATION.md) for all service ports
+- **RPC Port** (optional): Used for API access (only needed if you want external RPC access)
+  - Mainnet: `26657`
+  - Testnet: `26667`
+
+<details>
+<summary><strong>macOS</strong> - Click to expand firewall configuration</summary>
+
+**Using macOS Firewall (System Preferences):**
+
+1. Open **System Settings** (or **System Preferences** on older macOS)
+2. Go to **Network** → **Firewall** (or **Security & Privacy** → **Firewall**)
+3. Click the lock icon and enter your password
+4. Click **Firewall Options...**
+5. Click **+** to add a new rule
+6. Select your application or add a port rule:
+   - For **Docker Desktop**: Allow incoming connections
+   - Or add a port rule: Allow TCP port `26656` (and `26657` if needed)
+7. Click **OK** to save
+
+**Using Command Line (pfctl):**
+
+```bash
+# Check current firewall status
+sudo pfctl -s info
+
+# Allow P2P port (mainnet)
+sudo pfctl -a com.apple/250.ApplicationFirewall -t com.apple/250.ApplicationFirewall -T add 26656
+
+# Allow RPC port (optional, mainnet)
+sudo pfctl -a com.apple/250.ApplicationFirewall -t com.apple/250.ApplicationFirewall -T add 26657
+```
+
+**Note:** macOS firewall configuration can be complex. If you're running Docker Desktop, it may handle port forwarding automatically. For production nodes, consider using a dedicated firewall management tool.
+
+</details>
+
+<details>
+<summary><strong>Linux</strong> - Click to expand firewall configuration</summary>
+
+Linux firewall configuration depends on which firewall service you're using. Choose the method that matches your system:
+
+**Installing UFW (if not already installed):**
+
+UFW is usually pre-installed on Ubuntu/Debian systems. To check if it's installed:
+
+```bash
+# Check if UFW is installed
+which ufw
+
+# If not installed, install it:
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install ufw
+```
+
+**Using UFW (Ubuntu/Debian - Most Common):**
+
+```bash
+# Check UFW status
+sudo ufw status
+
+# Allow P2P port (mainnet)
+sudo ufw allow 26656/tcp
+
+# Allow RPC port (optional, mainnet)
+sudo ufw allow 26657/tcp
+
+# For testnet, use different ports:
+sudo ufw allow 26666/tcp  # Testnet P2P
+sudo ufw allow 26667/tcp  # Testnet RPC
+
+# Enable UFW if not already enabled
+sudo ufw enable
+
+# Verify the rules were added
+sudo ufw status numbered
+```
+
+**Installing firewalld (if not already installed):**
+
+firewalld is usually pre-installed on CentOS/RHEL/Fedora systems. To check if it's installed:
+
+```bash
+# Check if firewalld is installed
+which firewall-cmd
+
+# If not installed, install it:
+# CentOS/RHEL:
+sudo yum install firewalld
+# Or on newer versions:
+sudo dnf install firewalld
+
+# Fedora:
+sudo dnf install firewalld
+
+# Start and enable firewalld service
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+```
+
+**Using firewalld (CentOS/RHEL/Fedora):**
+
+```bash
+# Check firewalld status
+sudo firewall-cmd --state
+
+# Allow P2P port (mainnet)
+sudo firewall-cmd --permanent --add-port=26656/tcp
+
+# Allow RPC port (optional, mainnet)
+sudo firewall-cmd --permanent --add-port=26657/tcp
+
+# For testnet:
+sudo firewall-cmd --permanent --add-port=26666/tcp  # Testnet P2P
+sudo firewall-cmd --permanent --add-port=26667/tcp  # Testnet RPC
+
+# Reload firewall to apply changes
+sudo firewall-cmd --reload
+
+# Verify the rules
+sudo firewall-cmd --list-ports
+```
+
+**Installing iptables-persistent (for saving rules):**
+
+iptables is usually pre-installed on Linux systems, but you may need to install `iptables-persistent` to save rules permanently:
+
+```bash
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install iptables-persistent
+
+# During installation, you'll be asked if you want to save current rules
+# Answer "Yes" to both IPv4 and IPv6 rules
+```
+
+**Using iptables (Advanced/Manual Configuration):**
+
+```bash
+# Allow P2P port (mainnet)
+sudo iptables -A INPUT -p tcp --dport 26656 -j ACCEPT
+
+# Allow RPC port (optional, mainnet)
+sudo iptables -A INPUT -p tcp --dport 26657 -j ACCEPT
+
+# For testnet:
+sudo iptables -A INPUT -p tcp --dport 26666 -j ACCEPT  # Testnet P2P
+sudo iptables -A INPUT -p tcp --dport 26667 -j ACCEPT  # Testnet RPC
+
+# Save rules (method depends on your distribution)
+# Ubuntu/Debian (if iptables-persistent is installed):
+sudo netfilter-persistent save
+
+# Or manually save to file:
+sudo iptables-save > /etc/iptables/rules.v4
+```
+
+**Important Notes:**
+- If you're running multiple services (mainnet + testnet), open all required ports
+- The P2P port is **required** for your node to participate in the network
+- The RPC port is **optional** unless you need external API access
+- See [Port Allocation Strategy](PORT_ALLOCATION.md) for complete port information
+
+</details>
+
+<details>
+<summary><strong>Windows</strong> - Click to expand firewall configuration</summary>
+
+**Using Windows Firewall (GUI):**
+
+1. Open **Windows Defender Firewall** (search for "Firewall" in Start menu)
+2. Click **Advanced settings** on the left
+3. Click **Inbound Rules** → **New Rule...**
+4. Select **Port** → **Next**
+5. Select **TCP** and enter the port number:
+   - For mainnet P2P: `26656`
+   - For mainnet RPC (optional): `26657`
+   - For testnet P2P: `26666`
+   - For testnet RPC (optional): `26667`
+6. Select **Allow the connection** → **Next**
+7. Check all profiles (Domain, Private, Public) → **Next**
+8. Give it a name (e.g., "Infinite Drive Mainnet P2P") → **Finish**
+9. Repeat for each port you need
+
+**Using PowerShell (Command Line):**
+
+```powershell
+# Run PowerShell as Administrator
+
+# Allow P2P port (mainnet)
+New-NetFirewallRule -DisplayName "Infinite Drive Mainnet P2P" -Direction Inbound -Protocol TCP -LocalPort 26656 -Action Allow
+
+# Allow RPC port (optional, mainnet)
+New-NetFirewallRule -DisplayName "Infinite Drive Mainnet RPC" -Direction Inbound -Protocol TCP -LocalPort 26657 -Action Allow
+
+# For testnet:
+New-NetFirewallRule -DisplayName "Infinite Drive Testnet P2P" -Direction Inbound -Protocol TCP -LocalPort 26666 -Action Allow
+New-NetFirewallRule -DisplayName "Infinite Drive Testnet RPC" -Direction Inbound -Protocol TCP -LocalPort 26667 -Action Allow
+
+# Verify rules were created
+Get-NetFirewallRule -DisplayName "Infinite Drive*"
+```
+
+**Note:** Docker Desktop on Windows may handle some port forwarding automatically, but you still need to configure Windows Firewall for external access.
+
+</details>
+
+**Installing Verification Tools:**
+
+To verify that ports are accessible, you may need to install network testing tools:
+
+**Installing telnet:**
+```bash
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install telnet
+
+# CentOS/RHEL/Fedora:
+sudo yum install telnet
+# Or on newer versions:
+sudo dnf install telnet
+
+# macOS:
+# telnet is not included by default on newer macOS versions
+# Install via Homebrew:
+brew install telnet
+```
+
+**Installing netcat (nc):**
+```bash
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install netcat
+
+# CentOS/RHEL/Fedora:
+sudo yum install nc
+# Or on newer versions:
+sudo dnf install nc
+
+# macOS:
+# netcat is usually pre-installed, but if not:
+brew install netcat
+```
+
+**Verifying Port Access:**
+
+After configuring your firewall, you can verify that the ports are accessible:
+
+```bash
+# From another machine on your network, test if the port is open
+# Replace YOUR_IP with your machine's IP address
+
+# Using telnet:
+telnet YOUR_IP 26656
+
+# Or using netcat (if available):
+nc -zv YOUR_IP 26656
+
+# To test from the same machine (localhost):
+nc -zv localhost 26656
+```
+
+**Important:** If you're behind a router/NAT, you may also need to configure port forwarding on your router. Consult your router's documentation for port forwarding setup.
+
 ## Step 1: Navigate to Your Service
 
 Drive organizes services in separate directories. Each service is independent and can run simultaneously.
