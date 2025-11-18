@@ -17,7 +17,7 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 | Infinite Testnet Node      | ✅ Testnet support           |
 | Graphical Interface        | ✅ Self-descriptive UI       |
 | Persistent Data            | ✅ Isolated per service      |
-| Docker Compose             | ✅ Standard workflow         |
+| Container Management       | ✅ `drive.sh` wrapper script |
 
 ---
 
@@ -27,6 +27,12 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 
 - Docker (20.10+)
 - Docker Compose (1.29+)
+
+**Important Note on Docker Permissions (Linux):**
+- You may need to add your user to the `docker` group to run Docker commands without `sudo`
+- The `drive.sh` script works with or without `sudo`, but Docker itself requires `sudo` if your user is not in the docker group
+- To configure: `sudo usermod -aG docker $USER` (then log out and log back in)
+- See [Quick Start Guide](docs/quick-start.md) for complete Docker installation instructions
 
 ### Clone the Repository
 
@@ -43,9 +49,15 @@ The easiest way to manage your node is through the built-in graphical interface:
 
 ```bash
 cd services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 ```
+
+**Note:** 
+- Use `./drive.sh` instead of `docker compose` for container management commands (up, down, ps, etc.)
+- The script automatically handles permissions and works with or without `sudo`
+- **If Docker requires `sudo`** (user not in docker group), use `sudo ./drive.sh` instead
+- For commands inside the container (`exec`), use `docker compose exec` directly
 
 The graphical interface provides visual menus for all operations - no command memorization needed.
 
@@ -55,10 +67,12 @@ The graphical interface provides visual menus for all operations - no command me
 
 ```bash
 cd services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-init
 docker compose exec infinite-mainnet node-start
 ```
+
+**Why use `./drive.sh`?** It automatically configures correct user permissions, preventing volume permission errors. See [Container Management](docs/container-management.md) for details.
 
 ---
 
@@ -69,9 +83,11 @@ drive/
 ├── services/                    # Service definitions
 │   ├── infinite-mainnet/        # Infinite Mainnet blockchain node
 │   │   ├── docker-compose.yml  # Service configuration
+│   │   ├── drive.sh            # Container management wrapper (recommended)
 │   │   └── persistent-data/    # Persistent blockchain data (git-ignored)
 │   ├── infinite-testnet/       # Infinite Testnet blockchain node
 │   │   ├── docker-compose.yml
+│   │   ├── drive.sh
 │   │   └── persistent-data/
 │   └── [other-services]/       # Additional blockchains, services, and infrastructure
 ├── docs/                        # User documentation
@@ -91,9 +107,11 @@ Full blockchain node for **Infinite Improbability Chain** mainnet network.
 **Quick Commands:**
 ```bash
 cd services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
 
 ### Infinite Testnet
 
@@ -112,7 +130,7 @@ Full blockchain node for **Infinite Improbability Chain** testnet network.
 **Full Documentation:**
 - [Quick Start](docs/quick-start.md) - Get started in 5 minutes
 - [Node Operations](docs/node-operations.md) - Complete guide to node commands
-- [Container Management](docs/container-management.md) - Docker Compose commands
+- [Container Management](docs/container-management.md) - Container management with `drive.sh`
 - [Configuration](docs/configuration.md) - Service configuration guide
 - [Monitoring](docs/monitoring.md) - Monitor your services
 - [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
@@ -127,12 +145,14 @@ Each service is completely independent. Run multiple services simultaneously:
 ```bash
 # Mainnet node
 cd services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 
 # Testnet node (in another terminal)
 cd services/infinite-testnet
-docker compose up -d
+./drive.sh up -d
 ```
+
+**Note:** Each service has its own `drive.sh` script for easy container management with automatic permission handling.
 
 Each service maintains its own:
 - Container name
@@ -148,7 +168,7 @@ Drive is designed as an **open service orchestrator** that:
 
 - **Isolates services** - Each service runs independently
 - **Manages resources** - Each service can have different resource limits
-- **Simplifies deployment** - Standard Docker Compose workflow
+- **Simplifies deployment** - Standard Docker Compose workflow with `drive.sh` wrapper for easy management
 - **Enables scaling** - Easy to add new services or duplicate existing ones
 - **Multi-blockchain ready** - Extensible architecture supports any blockchain or service
 

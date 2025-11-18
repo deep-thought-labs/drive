@@ -12,12 +12,14 @@ The **easiest way** to manage your node is through the built-in graphical interf
 # Navigate to your service directory
 cd drive/services/infinite-mainnet
 
-# Start the container (if not running)
-docker compose up -d
+# Start the container (if not running) - use drive.sh for automatic permission handling
+./drive.sh up -d
 
 # Open the graphical interface
 docker compose exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for container management commands (up, down, ps, etc.) to automatically handle permissions. Use `docker compose exec` for commands inside the container.
 
 ### What You Can Do in the Interface
 
@@ -416,12 +418,16 @@ Each service in Drive is independent. You can run commands for different service
 ```bash
 # Mainnet node
 cd drive/services/infinite-mainnet
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 
 # Testnet node (in another terminal)
 cd drive/services/infinite-testnet
+./drive.sh up -d
 docker compose exec infinite-testnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
 
 Each service maintains its own:
 - Container name

@@ -19,7 +19,7 @@ Complete user guide for managing infrastructure services with Drive. This docume
   - Key management
   - Starting and stopping nodes
 
-- **[Container Management](container-management.md)** - Docker Compose commands
+- **[Container Management](container-management.md)** - Container management with `drive.sh`
   - Starting and stopping containers
   - Managing multiple services
   - Accessing container shell
@@ -62,9 +62,11 @@ drive/
 └── services/
     ├── infinite-mainnet/     # Mainnet blockchain node
     │   ├── docker-compose.yml
+    │   ├── drive.sh          # Container management wrapper (recommended)
     │   └── persistent-data/  # Service data (git-ignored)
     └── infinite-testnet/     # Testnet blockchain node
         ├── docker-compose.yml
+        ├── drive.sh
         └── persistent-data/  # Service data (git-ignored)
 ```
 
@@ -81,14 +83,14 @@ Each service is completely independent with its own:
 **Start a service:**
 ```bash
 cd drive/services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 ```
 
 **Stop a service:**
 ```bash
 cd drive/services/infinite-mainnet
-docker compose stop
+./drive.sh stop
 ```
 
 **View logs:**
@@ -97,14 +99,19 @@ cd drive/services/infinite-mainnet
 docker compose exec infinite-mainnet node-logs
 ```
 
+**Note:** Use `./drive.sh` for container management commands (up, down, stop, ps, etc.) to automatically handle permissions. Use `docker compose exec` for commands inside the container.
+
 ### Using the Graphical Interface
 
 The graphical interface (`node-ui`) is the **recommended method** for all operations:
 
 ```bash
 cd drive/services/infinite-mainnet
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` to start the container (automatically handles permissions), then use `docker compose exec` to access the interface.
 
 The interface provides:
 - Visual menus for all operations

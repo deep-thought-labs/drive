@@ -7,6 +7,11 @@ Get your Infinite Drive blockchain node up and running in minutes using the easi
 - Docker (20.10+)
 - Docker Compose (1.29+)
 
+**Important Note on Permissions:**
+- On Linux, you may need to add your user to the `docker` group to run Docker commands without `sudo`
+- The `drive.sh` script works with or without `sudo`, but Docker itself may require `sudo` if not configured
+- See the Docker installation instructions below for how to configure this
+
 ### Installing Docker
 
 <details>
@@ -53,11 +58,14 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Add your user to the docker group (optional, to avoid using sudo)
+# IMPORTANT: Add your user to the docker group to avoid using sudo with Docker
+# This step is REQUIRED if you want to run Docker commands without sudo
 sudo usermod -aG docker $USER
 ```
 
-**Note:** After adding your user to the docker group, you need to log out and log back in.
+**⚠️ IMPORTANT:** After adding your user to the docker group, you **MUST** log out and log back in (or restart your terminal session) for the changes to take effect.
+
+**Without this step:** You will need to use `sudo` with all Docker commands (including `./drive.sh`). The `drive.sh` script supports both cases (with or without sudo), but Docker itself requires sudo if your user is not in the docker group.
 
 **Verification:**
 ```bash
@@ -106,11 +114,13 @@ cd drive/services/infinite-mainnet
 
 ## Step 2: Start the Container
 
-Start the Docker container for your service:
+Start the Docker container for your service using the `drive.sh` script (recommended):
 
 ```bash
-docker compose up -d
+./drive.sh up -d
 ```
+
+**Why use `./drive.sh`?** It automatically configures correct user permissions, preventing volume permission errors. Works with or without `sudo`.
 
 **What happens:**
 - Docker pulls the pre-built image from Docker Hub (first time only, ~2-3 minutes)
@@ -119,10 +129,12 @@ docker compose up -d
 
 **Verify container is running:**
 ```bash
-docker compose ps
+./drive.sh ps
 ```
 
 You should see the container status as "Up".
+
+**Alternative:** If you prefer to use `docker compose` directly, you may need to configure permissions manually. See [Container Management](container-management.md#fixing-permission-issues) for details.
 
 ## Step 3: Choose Your Node Type (IMPORTANT - Read First!)
 
@@ -162,8 +174,14 @@ The **easiest and recommended way** to manage your node is through the built-in 
 ### Open the Graphical Interface
 
 ```bash
-docker compose exec infinite-mainnet node-ui
+# Make sure container is running first
+./drive.sh up -d
+
+# Open the graphical interface
+./drive.sh exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
 
 ### What You'll See
 
@@ -179,25 +197,27 @@ The graphical interface provides:
 
 **⚠️ IMPORTANT:** Complete these steps in order:
 
-1. **Open the interface:** `docker compose exec infinite-mainnet node-ui`
-2. **Navigate to "Key Management"** → **"Generate Key (Dry-Run - Recommended)"**
-3. **Create your key:**
+1. **Ensure container is running:** `./drive.sh up -d`
+2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
+3. **Navigate to "Key Management"** → **"Generate Key (Dry-Run - Recommended)"**
+4. **Create your key:**
    - Enter a name for your key (e.g., `my-validator`)
    - The system will display your **seed phrase** (12 or 24 words)
    - **⚠️ CRITICAL:** Write down and securely back up this seed phrase immediately
    - This seed phrase is the **ONLY** way to recover your validator keys
-4. **Navigate to "Advanced Operations"** → **"Initialize with Recovery (Validator)"**
-5. **Enter your seed phrase** when prompted (the one you just created and backed up)
-6. **Enter a moniker** (node name) when requested
-7. **After initialization, select "Start Node"** from Node Operations
-8. **Use "Node Monitoring"** to check status and view logs
+5. **Navigate to "Advanced Operations"** → **"Initialize with Recovery (Validator)"**
+6. **Enter your seed phrase** when prompted (the one you just created and backed up)
+7. **Enter a moniker** (node name) when requested
+8. **After initialization, select "Start Node"** from Node Operations
+9. **Use "Node Monitoring"** to check status and view logs
 
 **📖 Need Help?** See the [Key Management Guide](key-management.md) for complete key creation and backup procedures.
 
 #### For Simple Nodes (No Validator)
 
-1. **Open the interface:** `docker compose exec infinite-mainnet node-ui`
-2. **Navigate to "Advanced Operations"** → **"Initialize Node (Simple)"**
+1. **Ensure container is running:** `./drive.sh up -d`
+2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
+3. **Navigate to "Advanced Operations"** → **"Initialize Node (Simple)"**
 3. **Follow the interactive prompts:**
    - Enter a moniker (node name) when requested
    - Confirm any warnings about random keys (these are safe for non-validator nodes)
@@ -225,10 +245,15 @@ If you prefer command-line operations or need to automate tasks, you can use dir
 
 **Step-by-step workflow:**
 
-1. **Create your key (REQUIRED FIRST STEP):**
+1. **Start the container (if not running):**
    ```bash
    cd drive/services/infinite-mainnet
-   docker compose exec infinite-mainnet node-keys create my-validator --dry-run
+   ./drive.sh up -d
+   ```
+
+2. **Create your key (REQUIRED FIRST STEP):**
+   ```bash
+   ./drive.sh exec infinite-mainnet node-keys create my-validator --dry-run
    ```
    
    **What happens:**
@@ -239,15 +264,15 @@ If you prefer command-line operations or need to automate tasks, you can use dir
    
    **📖 Complete Guide:** See the [Key Management Guide](key-management.md) for detailed instructions on creating, backing up, and managing keys.
 
-2. **Back up your seed phrase securely:**
+3. **Back up your seed phrase securely:**
    - Write it on paper and store it safely
    - Or use a metal backup solution
    - Or store it in encrypted storage
    - **This is the ONLY way to recover your validator keys**
 
-3. **Initialize with recovery (use your seed phrase):**
+4. **Initialize with recovery (use your seed phrase):**
    ```bash
-   docker compose exec -it infinite-mainnet node-init --recover
+   ./drive.sh exec -it infinite-mainnet node-init --recover
    ```
    
    **What happens:**
@@ -255,9 +280,9 @@ If you prefer command-line operations or need to automate tasks, you can use dir
    - Prompts you to enter a moniker (node name)
    - Initializes the node with your validator keys
    
-4. **(Optional) Add key to keyring for later use:**
+5. **(Optional) Add key to keyring for later use:**
    ```bash
-   docker compose exec -it infinite-mainnet node-keys add my-validator
+   ./drive.sh exec -it infinite-mainnet node-keys add my-validator
    ```
    Enter your seed phrase when prompted to add it to the keyring.
 
@@ -273,7 +298,10 @@ If you prefer command-line operations or need to automate tasks, you can use dir
 
 ```bash
 cd drive/services/infinite-mainnet
-docker compose exec infinite-mainnet node-init
+# Start the container first (if not running)
+./drive.sh up -d
+# Initialize the node
+./drive.sh exec infinite-mainnet node-init
 ```
 
 **What it does:** Creates a new node with default configuration. Generates random keys automatically (not displayed). Suitable for full nodes that won't act as validators.
@@ -283,13 +311,17 @@ docker compose exec infinite-mainnet node-init
 ### Start the Node
 
 ```bash
-docker compose exec infinite-mainnet node-start
+# Ensure container is running
+./drive.sh up -d
+# Start the node
+./drive.sh exec infinite-mainnet node-start
 ```
 
 ### Verify Status
 
 ```bash
-docker compose exec infinite-mainnet node-process-status
+# Check node process status
+./drive.sh exec infinite-mainnet node-process-status
 ```
 
 ## Working with Multiple Services
@@ -299,13 +331,13 @@ You can run multiple services simultaneously. Each service is completely indepen
 ```bash
 # Terminal 1: Mainnet node
 cd drive/services/infinite-mainnet
-docker compose up -d
-docker compose exec infinite-mainnet node-ui
+./drive.sh up -d
+./drive.sh exec infinite-mainnet node-ui
 
 # Terminal 2: Testnet node (when available)
 cd drive/services/infinite-testnet
-docker compose up -d
-docker compose exec infinite-testnet node-ui
+./drive.sh up -d
+./drive.sh exec infinite-testnet node-ui
 ```
 
 Each service has:
@@ -317,7 +349,7 @@ Each service has:
 ## Next Steps
 
 - **[Node Operations](node-operations.md)** - Complete guide to all available commands
-- **[Container Management](container-management.md)** - Docker Compose commands
+- **[Container Management](container-management.md)** - Container management with `drive.sh`
 - **[Configuration](configuration.md)** - Customize your service
 - **[Monitoring](monitoring.md)** - Monitor your node health
 - **[Troubleshooting](troubleshooting.md)** - Solve common issues
@@ -328,19 +360,23 @@ Each service has:
 
 ```bash
 cd drive/services/infinite-mainnet
-docker compose up -d
-docker compose exec infinite-mainnet node-ui
+./drive.sh up -d
+./drive.sh exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
 
 ### Using Command Line (Advanced)
 
 ```bash
 cd drive/services/infinite-mainnet
-docker compose up -d
-docker compose exec infinite-mainnet node-init
-docker compose exec infinite-mainnet node-start
-docker compose exec infinite-mainnet node-process-status
+./drive.sh up -d
+./drive.sh exec infinite-mainnet node-init
+./drive.sh exec infinite-mainnet node-start
+./drive.sh exec infinite-mainnet node-process-status
 ```
+
+**Note:** Use `./drive.sh` for all commands to automatically handle permissions and ensure consistency.
 
 ## Tips
 

@@ -1,6 +1,45 @@
 # Container Management
 
-Essential Docker Compose commands for managing your service containers in Drive. These commands control the container lifecycle and access.
+Essential commands for managing your service containers in Drive using the `drive.sh` wrapper script. These commands control the container lifecycle and access.
+
+## Quick Start: Using the Wrapper Script
+
+**Recommended for all users:** Each service includes a `drive.sh` script that automatically handles permission configuration. Use it instead of `docker compose` directly:
+
+```bash
+cd drive/services/infinite-mainnet
+
+# Instead of: docker compose up -d
+./drive.sh up -d
+
+# Instead of: docker compose down
+./drive.sh down
+
+# Instead of: docker compose ps
+./drive.sh ps
+
+# Works with any docker-compose command!
+```
+
+**Benefits:**
+- ✅ Automatically configures correct user permissions
+- ✅ Works with or without `sudo` (handles both cases automatically)
+- ✅ No need to manually set environment variables
+- ✅ Prevents permission errors when writing to volumes
+
+**Important Note on Docker Permissions:**
+- **If Docker requires `sudo`** (user not in docker group), you must use `sudo ./drive.sh` - the script will detect and handle this correctly
+- **If Docker works without `sudo`** (user in docker group), use `./drive.sh` directly
+- The script automatically detects your real user ID whether you use `sudo` or not, ensuring correct volume permissions
+
+**To avoid needing `sudo` with Docker:**
+```bash
+# Add your user to the docker group (Linux only)
+sudo usermod -aG docker $USER
+# Then log out and log back in
+```
+
+**Note:** All examples below show both the wrapper script (recommended) and direct `docker compose` commands. Use whichever you prefer, but the wrapper script is recommended to avoid permission issues.
 
 ## Working with Services
 
@@ -19,13 +58,34 @@ The easiest way to start and manage containers is through the graphical interfac
 
 ```bash
 cd drive/services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 ```
+
+**Note:** Use `./drive.sh` for container management (up, down, ps, etc.) and `docker compose exec` for commands inside the container.
 
 The interface provides visual options for all container operations.
 
 ### Using Command Line
+
+**Recommended: Use the wrapper script for automatic permission handling**
+
+```bash
+# Navigate to service directory
+cd drive/services/infinite-mainnet
+
+# Use the wrapper script (automatically handles permissions)
+# If Docker requires sudo, use: sudo ./drive.sh up -d
+# If Docker works without sudo, use: ./drive.sh up -d
+./drive.sh up -d
+
+# Start existing container (if stopped)
+./drive.sh start
+```
+
+**Note:** If you get a "permission denied" error when running `./drive.sh`, it means Docker requires `sudo`. In that case, use `sudo ./drive.sh` instead. The script handles both cases correctly.
+
+**Alternative: Direct docker-compose (requires manual permission setup)**
 
 ```bash
 # Navigate to service directory
@@ -38,13 +98,15 @@ docker compose up -d
 docker compose start
 ```
 
+**Note:** If you encounter permission issues with direct `docker compose` commands, use the wrapper script (`drive.sh`) instead, or see the [Fixing Permission Issues](#fixing-permission-issues) section below.
+
 **What it does:**
-- `docker compose up -d`: Creates the container if it doesn't exist and starts it in detached mode (background). The `-d` flag means it won't block your terminal.
-- `docker compose start`: Starts an already-created container that was previously stopped.
+- `./drive.sh up -d`: Creates the container if it doesn't exist and starts it in detached mode (background). The `-d` flag means it won't block your terminal.
+- `./drive.sh start`: Starts an already-created container that was previously stopped.
 
 **Expected output:**
-- `docker compose up -d`: Shows container name and status (e.g., `infinite-mainnet  Started`)
-- `docker compose start`: Minimal output, just confirms the container started
+- `./drive.sh up -d`: Shows container name and status (e.g., `infinite-mainnet  Started`)
+- `./drive.sh start`: Minimal output, just confirms the container started
 
 **When to use:**
 - `up -d`: First time setup or when recreating the container
@@ -68,22 +130,22 @@ docker compose exec infinite-mainnet node-ui
 cd drive/services/infinite-mainnet
 
 # Stop container (keeps it created)
-docker compose stop
+./drive.sh stop
 
 # Stop and remove container
-docker compose down
+./drive.sh down
 ```
 
 **What it does:**
-- `docker compose stop`: Stops the running container but keeps it created. The container and its data remain, just not running.
-- `docker compose down`: Stops the container and removes it. The container is deleted but data volumes persist (unless you use `-v` flag).
+- `./drive.sh stop`: Stops the running container but keeps it created. The container and its data remain, just not running.
+- `./drive.sh down`: Stops the container and removes it. The container is deleted but data volumes persist (unless you use `-v` flag).
 
 **Expected output:**
 - `stop`: Shows container name and "Stopped" status
 - `down`: Shows "Removed" or "Stopped" for the container
 
 **When to use:**
-- `stop`: Temporary stop (e.g., system maintenance) - you can restart with `docker compose start`
+- `stop`: Temporary stop (e.g., system maintenance) - you can restart with `./drive.sh start`
 - `down`: Complete cleanup or when you want to remove the container entirely
 
 **Important:** Both commands will stop the node if it's running. Use `node-stop` first for graceful shutdown, then stop the container.
@@ -94,10 +156,10 @@ docker compose down
 cd drive/services/infinite-mainnet
 
 # Check container status
-docker compose ps
+./drive.sh ps
 
-# Check specific service
-docker compose ps infinite-mainnet
+# Check specific service (same command, docker-compose filters automatically)
+./drive.sh ps infinite-mainnet
 ```
 
 **What it does:** Shows the current status of containers managed by docker-compose.
@@ -154,7 +216,7 @@ docker compose exec infinite-mainnet sh
 
 ```bash
 cd drive/services/infinite-mainnet
-docker compose restart infinite-mainnet
+./drive.sh restart infinite-mainnet
 ```
 
 **What it does:** Stops and starts the container in one command. This is faster than `stop` + `start`.
@@ -171,16 +233,16 @@ docker compose restart infinite-mainnet
 cd drive/services/infinite-mainnet
 
 # All logs
-docker compose logs infinite-mainnet
+./drive.sh logs infinite-mainnet
 
 # Follow logs (real-time)
-docker compose logs -f infinite-mainnet
+./drive.sh logs -f infinite-mainnet
 
 # Last N lines
-docker compose logs --tail=100 infinite-mainnet
+./drive.sh logs --tail=100 infinite-mainnet
 
 # Last N lines and follow
-docker compose logs --tail=100 -f infinite-mainnet
+./drive.sh logs --tail=100 -f infinite-mainnet
 ```
 
 **What it does:** Displays logs from the container itself (Docker logs), which may differ from node logs.
@@ -208,18 +270,18 @@ docker compose logs --tail=100 -f infinite-mainnet
 cd drive/services/infinite-mainnet
 
 # Remove container (keeps volumes/data)
-docker compose down
+./drive.sh down
 
 # Remove container and volumes (deletes all data)
-docker compose down -v
+./drive.sh down -v
 
 # Remove data directory manually (from host)
 rm -rf ./persistent-data/*
 ```
 
 **What it does:**
-- `docker compose down`: Removes the container but keeps data volumes intact
-- `docker compose down -v`: Removes container AND all associated volumes (deletes blockchain data)
+- `./drive.sh down`: Removes the container but keeps data volumes intact
+- `./drive.sh down -v`: Removes container AND all associated volumes (deletes blockchain data)
 - `rm -rf ./persistent-data/*`: Manually deletes data from the host filesystem
 
 **Expected output:**
@@ -234,6 +296,124 @@ rm -rf ./persistent-data/*
 
 **⚠️ Critical:** Using `-v` or manual deletion will permanently erase all blockchain data, keys, and configuration. Only use when you want to start completely fresh.
 
+## Fixing Permission Issues
+
+If you encounter permission errors when the container tries to write to the `persistent-data/` directory, it's likely because your user ID (UID) or group ID (GID) on the host doesn't match the default `1000:1000` used in the container.
+
+### Symptoms
+- Container fails to write files to `persistent-data/`
+- Permission denied errors in logs
+- Node initialization fails
+- Cannot create or modify files in the mounted volume
+
+### Solution
+
+The `docker-compose.yml` file now supports custom user IDs through environment variables. You can fix permission issues by setting your host user's UID and GID. **The solution works the same whether you use `sudo` or not.**
+
+**Option 0: Use the wrapper script (easiest - recommended)**
+```bash
+cd drive/services/infinite-mainnet
+
+# Use the wrapper script instead of docker-compose directly
+# It automatically configures permissions and works with or without sudo
+# If Docker requires sudo, use: sudo ./drive.sh up -d
+# If Docker works without sudo, use: ./drive.sh up -d
+./drive.sh up -d
+./drive.sh down
+./drive.sh ps
+# Works with any docker-compose command!
+```
+
+**Important:** The `drive.sh` script supports both `sudo` and non-sudo usage, but **Docker itself** may require `sudo` if your user is not in the docker group. If you get permission errors, use `sudo ./drive.sh` instead.
+
+The wrapper script (`drive.sh`) automatically:
+- Detects your user ID and group ID (works with or without sudo)
+- Configures `PUID` and `PGID` environment variables correctly
+- Executes docker-compose with the correct permissions
+- Passes all arguments to docker-compose (works with any docker-compose command)
+- **Handles Docker's sudo requirement** - if Docker needs sudo, use `sudo ./drive.sh`
+
+**To configure Docker to work without sudo (Linux):**
+```bash
+# Add your user to the docker group
+sudo usermod -aG docker $USER
+# Log out and log back in for changes to take effect
+```
+
+**Option 1: Set environment variables (works with or without sudo)**
+```bash
+cd drive/services/infinite-mainnet
+
+# This automatically detects your real user ID, even when using sudo
+export PUID=${SUDO_UID:-$(id -u)}
+export PGID=${SUDO_GID:-$(id -g)}
+
+# Start the container (works with or without sudo)
+# Use drive.sh which handles this automatically
+./drive.sh up -d
+# or if Docker requires sudo
+sudo ./drive.sh up -d
+```
+
+**Option 2: Set inline when starting (not needed with drive.sh)**
+```bash
+cd drive/services/infinite-mainnet
+
+# drive.sh handles this automatically, but if using docker compose directly:
+# Without sudo
+PUID=$(id -u) PGID=$(id -g) docker compose up -d
+
+# With sudo (automatically uses SUDO_UID/SUDO_GID)
+PUID=${SUDO_UID:-$(id -u)} PGID=${SUDO_GID:-$(id -g)} sudo docker compose up -d
+```
+
+**Note:** Using `./drive.sh` is recommended as it handles this automatically.
+
+**Option 3: Add to your shell profile (permanent - works with or without sudo)**
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+# This will work whether you use sudo or not
+export PUID=${SUDO_UID:-$(id -u)}
+export PGID=${SUDO_GID:-$(id -g)}
+```
+
+**How it works:**
+- `${SUDO_UID:-$(id -u)}` means: use `SUDO_UID` if it exists (when using sudo), otherwise use `$(id -u)`
+- When you use `sudo`, the environment variables `SUDO_UID` and `SUDO_GID` are automatically set to your real user's IDs
+- When you don't use `sudo`, it falls back to `$(id -u)` and `$(id -g)`
+- This ensures the container always runs with your real user's permissions, not root's
+
+After setting these variables, restart the container:
+```bash
+./drive.sh down
+./drive.sh up -d
+```
+
+**What it does:**
+- `PUID`: Your user ID on the host system (detects automatically, works with or without sudo)
+- `PGID`: Your group ID on the host system (detects automatically, works with or without sudo)
+- The container will run with these IDs, matching your host user permissions
+- If not set, defaults to `1000:1000` (works for most Linux systems)
+- **Important:** Works identically whether you use `sudo` or not - it automatically detects your real user ID
+
+**Verification:**
+```bash
+# Check what UID/GID the container is using
+docker compose exec infinite-mainnet id
+
+# Should match your host user ID
+id
+```
+
+**Note:** Use `docker compose exec` for commands inside the container, and `./drive.sh` for container management commands.
+
+**Note:** If you've already created files with wrong permissions, you may need to fix them:
+```bash
+# Fix ownership of existing data (works with or without sudo)
+# This uses your real user ID, even if you run it with sudo
+sudo chown -R ${SUDO_UID:-$(id -u)}:${SUDO_GID:-$(id -g)} ./persistent-data
+```
+
 ## Rebuild Image
 
 **Note:** In Drive, services use pre-built images from Docker Hub. Rebuilding is typically only needed if you're developing custom images.
@@ -242,13 +422,13 @@ rm -rf ./persistent-data/*
 cd drive/services/infinite-mainnet
 
 # Rebuild image
-docker compose build
+./drive.sh build
 
 # Rebuild without cache (fresh build)
-docker compose build --no-cache
+./drive.sh build --no-cache
 
 # Rebuild and restart
-docker compose up -d --build
+./drive.sh up -d --build
 ```
 
 **What it does:**
@@ -269,12 +449,12 @@ Each service in Drive is independent. You can manage them separately:
 ```bash
 # Service 1: Mainnet
 cd drive/services/infinite-mainnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-mainnet node-ui
 
 # Service 2: Testnet (in another terminal)
 cd drive/services/infinite-testnet
-docker compose up -d
+./drive.sh up -d
 docker compose exec infinite-testnet node-ui
 ```
 
