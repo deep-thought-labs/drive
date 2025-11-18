@@ -76,7 +76,7 @@ services:
       # example: NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@seed1.infinitedrive.xyz:26656"
       #
       # (required for initial connection)
-      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656" 
+      NODE_P2P_SEEDS: "5f37b706f61a8cbb4035bbb3ade32e38376cad58@51.38.37.230:26656" 
 
     ### End environment variables
   ### End service infinite-mainnet

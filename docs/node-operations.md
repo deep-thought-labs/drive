@@ -21,16 +21,42 @@ cd drive/services/infinite-mainnet
 
 **Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec). This automatically handles permissions.
 
-### What You Can Do in the Interface
+### Interface Structure and Navigation
 
-The graphical interface provides access to all operations through visual menus:
+The graphical interface is organized into **submenus** that you can navigate by selecting options with arrow keys and Enter. Here's how the interface is structured:
 
-- **Key Management** - Create, list, show, delete keys
-- **Node Operations** - Start, stop, restart the node
-- **Advanced Operations** - Initialize node, validate genesis, clean data
-- **Node Monitoring** - View logs, check status, network diagnosis, system information
+**Main Menu Options:**
 
-**All operations are self-descriptive** - each menu option explains what it does, making it perfect for beginners.
+1. **Key Management** (Submenu)
+   - Create, list, show, or delete cryptographic keys
+   - Generate and save new keys
+   - Add existing keys from seed phrase
+   - Manage your keyring
+
+2. **Node Operations** (Submenu)
+   - **Essential operations:** Start, stop, restart the node
+   - Quick access to the most common node operations
+
+3. **Advanced Operations** (Submenu)
+   - **Initialize Node** - First-time node setup (simple mode for full nodes)
+   - **Initialize with Recovery (Validator)** - Required for validator nodes (uses seed phrase)
+   - **Delete Node Data** - Remove all node data to start fresh
+   - Other advanced configuration options
+
+4. **Node Monitoring** (Submenu)
+   - **Node Status** - Check if the node process is running
+   - **View Logs** - See the last N lines of logs
+   - **Follow Logs** - Real-time log streaming
+   - Network diagnosis and system information
+
+**How to Navigate:**
+- Use **arrow keys (↑↓)** to move between options
+- Press **Enter** to select an option and enter a submenu
+- Press **Esc** or select "Back" to return to the previous menu
+- Each submenu has a "Back" option to return to the main menu
+- You can navigate freely between submenus as needed
+
+**Tip:** Don't worry about getting lost - you can always navigate back to the main menu using the "Back" option or Esc key.
 
 ## Available Commands
 
@@ -165,7 +191,9 @@ If you're setting up a **validator node**, you **MUST** add keys to your keyring
 
 4. **After adding your key:**
    - You can verify it was saved by selecting "List All Keys"
-   - Proceed to initialize your node using the recovery mode option (required for validator nodes)
+   - **Next step:** Navigate back to the main menu (press Esc or select "Back")
+   - Then proceed to **"Advanced Operations"** → **"Initialize with Recovery (Validator)"** to initialize your node
+   - **Alternatively:** You can return to the [Quick Start Guide](../quick-start.md) and continue from Step 5 to follow the complete initialization process
 
 **⚠️ CRITICAL SECURITY REMINDER - Seed Phrase Backup:**
 
@@ -311,7 +339,37 @@ cd drive/services/infinite-mainnet
 
 **When to use:** Quick verification that the node process is active, especially useful for troubleshooting or monitoring scripts.
 
-**Note:** This checks the process status, not the blockchain sync status. Use `infinited status` to check sync status.
+**Note:** This checks the process status, not the blockchain sync status. See the "Check Sync Status" section below for information on verifying blockchain synchronization.
+
+## Check Sync Status
+
+After starting your node, it will begin synchronizing with the blockchain network. You need to verify that synchronization is complete before proceeding with validator operations.
+
+### Using Graphical Interface (Easiest)
+
+1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+2. Navigate to **"Node Monitoring"** → **"Node Status"** or **"View Logs"**
+3. Look for sync progress indicators in the logs
+
+### Using Command Line
+
+```bash
+cd drive/services/infinite-mainnet
+
+# Check sync status
+./drive.sh exec infinite-mainnet infinited status
+```
+
+**What to look for:**
+- **`catching_up: false`** - Node is fully synchronized
+- **`catching_up: true`** - Node is still syncing (wait until it becomes `false`)
+- **`latest_block_height`** - Current block height the node has synced to
+- **`earliest_block_height`** - Earliest block the node has
+
+**When sync is complete:**
+- The node is ready for normal operations
+- For validator nodes, you can proceed with creating your validator on-chain
+- **Note:** Instructions for creating validators on-chain will be added to the documentation in a future update
 
 ## View Logs
 

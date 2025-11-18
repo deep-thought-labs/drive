@@ -819,18 +819,30 @@ The easiest way to manage your node is through the built-in graphical interface.
 ./drive.sh exec infinite-mainnet node-ui
 ```
 
+### Understanding the Interface Structure
+
+The graphical interface is organized into **submenus** that you navigate using arrow keys and Enter:
+
+- **Key Management** (Submenu) - Create, add, list, or manage cryptographic keys
+- **Node Operations** (Submenu) - Essential operations: Start, stop, restart the node
+- **Advanced Operations** (Submenu) - Initialize node, initialize with recovery (for validators), delete node data
+- **Node Monitoring** (Submenu) - Check node status, view logs, follow logs in real-time, network diagnosis
+
+**Navigation:** Use arrow keys (↑↓) to move, Enter to select, and Esc or "Back" to return to previous menus. You can navigate freely between submenus.
+
 ### First-Time Setup
 
 **⚠️ Reminder:** If you're setting up a validator node, add your keys to the keyring first:
 
-1. Navigate to **"Key Management"**
+1. Navigate to **"Key Management"** from the main menu
    - **Create new key:** Choose **"Generate and Save Key"** (if starting fresh)
    - **Add existing key:** Choose **"Add Existing Key from Seed Phrase"** (if you already have keys)
+   - After creating/adding your key, navigate back to the main menu (Esc or "Back")
 2. Navigate to **"Advanced Operations"** → **"Initialize Node"**
    - For validators: Choose **"Initialize with Recovery (Validator)"** and select your key
    - For simple nodes: Choose **"Initialize Node (Simple)"**
 3. Enter a moniker (node name) when prompted
-4. After initialization, select **"Start Node"** from Node Operations
+4. After initialization, navigate to **"Node Operations"** → **"Start Node"**
 5. Use **"Node Monitoring"** to check status and view logs
 
 The interface provides visual menus for all operations. See [Node Operations](node-operations.md) for complete documentation.
@@ -929,10 +941,42 @@ cd drive/services/infinite-mainnet
 
 **Note:** Use `./drive.sh` for all commands to automatically handle permissions and ensure consistency.
 
+## Documentation Scope
+
+**Current Documentation Coverage:**
+
+This guide covers the complete process of:
+- ✅ Installing prerequisites (Git, Docker, Docker Compose)
+- ✅ Configuring firewall ports
+- ✅ Cloning the repository
+- ✅ Setting up and initializing your node (validator or simple)
+- ✅ Starting your node and beginning synchronization
+- ✅ Verifying node status and monitoring synchronization progress
+
+**How to Verify Synchronization:**
+
+After starting your node, verify it's fully synchronized before proceeding:
+
+```bash
+# Check sync status
+./drive.sh exec infinite-mainnet infinited status
+```
+
+Look for `catching_up: false` - this indicates your node is fully synchronized with the network.
+
+**Next Steps (Coming Soon):**
+
+Once your node is fully synchronized, you can proceed with:
+- Creating your validator on-chain (documentation to be added)
+- Additional validator operations and management
+
+**Note:** Instructions for creating validators on-chain will be added to the documentation in a future update.
+
 ## Tips
 
 - **Start with the graphical interface** - It's the easiest way and guides you through everything
 - **Use command line for automation** - Scripts and automation benefit from direct commands
 - **Each service is independent** - You can run mainnet and testnet nodes simultaneously
 - **Data persists** - Your blockchain data is stored in `persistent-data/` directory
+- **Wait for full sync** - Ensure your node is fully synchronized (`catching_up: false`) before proceeding with validator operations
 
