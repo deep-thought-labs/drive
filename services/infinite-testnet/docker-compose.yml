@@ -77,7 +77,7 @@ services:
       #
       # TODO: Update with official testnet seed nodes when available
       # (required for initial connection)
-      NODE_P2P_SEEDS: "" 
+      NODE_P2P_SEEDS: "88ec87026e7b61eceeca0d74cf47a24cea36642b@66.70.178.128:26666" 
 
     ### End environment variables
   ### End service infinite-testnet
