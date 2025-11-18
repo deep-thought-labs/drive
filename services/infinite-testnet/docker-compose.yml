@@ -61,8 +61,7 @@ services:
       ##################################################################################
       NODE_CHAIN_ID: "infinite_421018001-1"  # Chain ID for the Infinite Testnet network
       NODE_EVM_CHAIN_ID: "421018001"         # EVM Chain ID for compatibility
-      # TODO: Update with official testnet genesis URL when available
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-testnet-genesis.json"  
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/main/services/infinite-testnet/genesis.json"  
 
       ##################################################################################
       #                           Network P2P Configuration                            #
