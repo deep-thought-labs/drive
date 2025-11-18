@@ -4,13 +4,110 @@ Get your Infinite Drive blockchain node up and running in minutes using the easi
 
 ## Prerequisites
 
-- Docker (20.10+)
-- Docker Compose (1.29+)
+- **Git** - For cloning the repository
+- **Docker** (20.10+) - For running containers
+- **Docker Compose** (1.29+) - For managing multi-container applications
 
 **Important Note on Permissions:**
 - On Linux, you may need to add your user to the `docker` group to run Docker commands without `sudo`
 - The `drive.sh` script works with or without `sudo`, but Docker itself may require `sudo` if not configured
-- See the Docker installation instructions below for how to configure this
+- See the installation instructions below for how to configure this
+
+### Installing Git
+
+<details>
+<summary><strong>macOS</strong> - Click to expand Git installation</summary>
+
+**Git Installation:**
+
+Git is usually pre-installed on macOS. To check if it's installed:
+
+```bash
+git --version
+```
+
+**If Git is not installed:**
+
+1. **Using Homebrew (Recommended):**
+   ```bash
+   # Install Homebrew if you don't have it:
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   
+   # Install Git:
+   brew install git
+   ```
+
+2. **Using Xcode Command Line Tools:**
+   ```bash
+   xcode-select --install
+   ```
+
+**Verification:**
+```bash
+git --version
+```
+
+</details>
+
+<details>
+<summary><strong>Linux</strong> - Click to expand Git installation</summary>
+
+**Git Installation:**
+
+Git is usually pre-installed on most Linux distributions. To check if it's installed:
+
+```bash
+git --version
+```
+
+**If Git is not installed:**
+
+```bash
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install git
+
+# CentOS/RHEL/Fedora:
+sudo yum install git
+# Or on newer versions:
+sudo dnf install git
+```
+
+**Verification:**
+```bash
+git --version
+```
+
+</details>
+
+<details>
+<summary><strong>Windows</strong> - Click to expand Git installation</summary>
+
+**Git Installation:**
+
+1. **Download Git for Windows:**
+   - Visit [git-scm.com/download/win](https://git-scm.com/download/win)
+   - Download the installer
+   - Run the installer and follow the setup wizard
+   - Accept the default options (recommended)
+
+2. **Or install via package manager:**
+   ```powershell
+   # Using Chocolatey (if installed):
+   choco install git
+   
+   # Using winget (Windows 10/11):
+   winget install Git.Git
+   ```
+
+**Verification:**
+```powershell
+git --version
+```
+
+**Note:** After installation, you may need to restart your terminal or PowerShell window.
+
+</details>
 
 ### Installing Docker
 
@@ -624,20 +721,50 @@ telnet YOUR_IP 26656
 - Testing from the same machine (localhost) only verifies the firewall allows local connections
 - Testing from another machine verifies external access is working
 
-## Step 1: Navigate to Your Service
+## Step 1: Clone the Repository
+
+First, clone the Drive repository to your local machine:
+
+```bash
+# Clone the repository
+git clone https://github.com/deep-thought-labs/drive.git
+
+# Navigate into the repository
+cd drive
+```
+
+**What is this repository?**
+The Drive repository contains all the service configurations, documentation, and scripts needed to run Infinite Drive nodes. Each service (mainnet, testnet, etc.) is organized in separate directories.
+
+**Verification:**
+After cloning, you should see a `drive/` directory with subdirectories like `services/`, `docs/`, etc.
+
+## Step 2: Navigate to Your Service
 
 Drive organizes services in separate directories. Each service is independent and can run simultaneously.
 
+**Choose which service you want to run:**
+
+- **Mainnet** - Production blockchain network (recommended for most users)
+- **Testnet** - Testing network (for development and testing)
+
+**Navigate to your chosen service:**
+
 ```bash
-# Navigate to the Infinite Mainnet service
-cd drive/services/infinite-mainnet
+# For Mainnet (production network):
+cd services/infinite-mainnet
+
+# OR for Testnet (testing network):
+cd services/infinite-testnet
 ```
 
 **Available Services:**
-- `infinite-mainnet/` - Mainnet blockchain node
-- `infinite-testnet/` - Testnet blockchain node
+- `infinite-mainnet/` - Mainnet blockchain node (production network)
+- `infinite-testnet/` - Testnet blockchain node (testing network)
 
-## Step 2: Start the Container
+**Note:** You can run multiple services simultaneously by opening separate terminal windows and navigating to different service directories.
+
+## Step 3: Start the Container
 
 Start the Docker container for your service using the `drive.sh` script (recommended):
 
@@ -661,193 +788,92 @@ You should see the container status as "Up".
 
 **Alternative:** If you prefer to use `docker compose` directly, you may need to configure permissions manually. See [Container Management](container-management.md#fixing-permission-issues) for details.
 
-## Step 3: Choose Your Node Type (IMPORTANT - Read First!)
+## Step 4: Important Note Before Initialization
 
-**⚠️ CRITICAL DECISION BEFORE INITIALIZATION:**
+**⚠️ For Validator Nodes Only:**
 
-Before initializing your node, you need to decide what type of node you're setting up:
+If you're setting up a **validator node**, you must add keys to your keyring BEFORE initializing:
 
-### 🔴 Validator Node (Requires Seed Phrase)
+- **Create a new key** and add it to the keyring (if starting fresh)
+- **Add an existing key** from seed phrase (if you already have keys)
 
-**If you plan to run a validator node**, you **MUST** create a cryptographic key first and save the seed phrase. This is **REQUIRED** and cannot be skipped.
+See [Key Management](node-operations.md#key-management) for instructions.
 
-**Why?** Validator nodes need a recoverable seed phrase to:
-- Sign blocks and transactions
-- Recover your validator keys if needed
-- Maintain control over your validator identity
+**For Simple Nodes (Full Node, No Validator):**
 
-**⚠️ BEFORE INITIALIZATION - Create Your Key:**
-
-1. **Create a new key** and **save the seed phrase** (see [Key Management Guide](key-management.md) for complete instructions)
-2. **Back up the seed phrase securely** (paper, metal, encrypted storage - your choice)
-3. **Use that seed phrase** during initialization with recovery mode
-
-**📖 Complete Guide:** See the [Key Management Guide](key-management.md) for detailed instructions on creating and backing up keys.
-
-### ✅ Simple Node (No Validator)
-
-**If you're running a full node (not a validator)**, you can proceed directly with simple initialization. No key creation needed - the system will generate random keys automatically.
-
-**Safe to proceed:** Simple initialization is perfect for full nodes that won't act as validators.
+You can proceed directly to initialization - no key setup needed.
 
 ---
 
-## Step 4: Use the Graphical Interface (Recommended - Easiest Method)
+## Step 5: Use the Graphical Interface (Recommended)
 
-The **easiest and recommended way** to manage your node is through the built-in graphical interface. This method requires no command memorization and guides you through every step.
+The easiest way to manage your node is through the built-in graphical interface.
 
-### Open the Graphical Interface
+### Open the Interface
 
 ```bash
-# Make sure container is running first
+# Ensure container is running
 ./drive.sh up -d
 
 # Open the graphical interface
 ./drive.sh exec infinite-mainnet node-ui
 ```
 
-**Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
+### First-Time Setup
 
-### What You'll See
+**⚠️ Reminder:** If you're setting up a validator node, add your keys to the keyring first:
 
-The graphical interface provides:
-- **Visual menus** - Navigate with arrow keys and Enter
-- **Self-descriptive options** - Each option explains what it does
-- **Interactive wizards** - Step-by-step guidance for all operations
-- **Real-time information** - Status, logs, and monitoring in one place
+1. Navigate to **"Key Management"**
+   - **Create new key:** Choose **"Generate and Save Key"** (if starting fresh)
+   - **Add existing key:** Choose **"Add Existing Key from Seed Phrase"** (if you already have keys)
+2. Navigate to **"Advanced Operations"** → **"Initialize Node"**
+   - For validators: Choose **"Initialize with Recovery (Validator)"** and select your key
+   - For simple nodes: Choose **"Initialize Node (Simple)"**
+3. Enter a moniker (node name) when prompted
+4. After initialization, select **"Start Node"** from Node Operations
+5. Use **"Node Monitoring"** to check status and view logs
 
-### First-Time Setup Through the Interface
+The interface provides visual menus for all operations. See [Node Operations](node-operations.md) for complete documentation.
 
-#### For Validator Nodes (Requires Seed Phrase)
+## Step 6: Command Line Interface (Advanced)
 
-**⚠️ IMPORTANT:** Complete these steps in order:
+For command-line operations, use these commands:
 
-1. **Ensure container is running:** `./drive.sh up -d`
-2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
-3. **Navigate to "Key Management"** → **"Generate Key (Dry-Run - Recommended)"**
-4. **Create your key:**
-   - Enter a name for your key (e.g., `my-validator`)
-   - The system will display your **seed phrase** (12 or 24 words)
-   - **⚠️ CRITICAL:** Write down and securely back up this seed phrase immediately
-   - This seed phrase is the **ONLY** way to recover your validator keys
-5. **Navigate to "Advanced Operations"** → **"Initialize with Recovery (Validator)"**
-6. **Enter your seed phrase** when prompted (the one you just created and backed up)
-7. **Enter a moniker** (node name) when requested
-8. **After initialization, select "Start Node"** from Node Operations
-9. **Use "Node Monitoring"** to check status and view logs
+### Add Keys to Keyring (Validators Only)
 
-**📖 Need Help?** See the [Key Management Guide](key-management.md) for complete key creation and backup procedures.
-
-#### For Simple Nodes (No Validator)
-
-1. **Ensure container is running:** `./drive.sh up -d`
-2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
-3. **Navigate to "Advanced Operations"** → **"Initialize Node (Simple)"**
-3. **Follow the interactive prompts:**
-   - Enter a moniker (node name) when requested
-   - Confirm any warnings about random keys (these are safe for non-validator nodes)
-4. **After initialization, select "Start Node"** from Node Operations
-5. **Use "Node Monitoring"** to check status and view logs
-
-**That's it!** The interface handles everything else. You can perform all operations through the menus without remembering any commands.
-
-### Common Operations in the Interface
-
-- **Key Management** - Create, list, show, or delete keys (see [Key Management Guide](key-management.md))
-- **Node Operations** - Start, stop, restart the node
-- **Node Monitoring** - View logs, check status, network diagnosis
-- **System Information** - Container and node details
-
-## Step 5: Advanced - Command Line Interface (Optional)
-
-If you prefer command-line operations or need to automate tasks, you can use direct commands. This method is for advanced users who are comfortable with terminal commands.
-
-### Initialize Node (First Time Only)
-
-#### 🔴 Validator Node (Requires Seed Phrase - READ THIS FIRST!)
-
-**⚠️ CRITICAL:** If you're setting up a validator node, you **MUST** create a key first and save the seed phrase before initialization.
-
-**Step-by-step workflow:**
-
-1. **Start the container (if not running):**
-   ```bash
-   cd drive/services/infinite-mainnet
-   ./drive.sh up -d
-   ```
-
-2. **Create your key (REQUIRED FIRST STEP):**
-   ```bash
-   ./drive.sh exec infinite-mainnet node-keys create my-validator --dry-run
-   ```
-   
-   **What happens:**
-   - The system generates a cryptographic key
-   - **Displays your seed phrase (12 or 24 words)**
-   - **⚠️ CRITICAL:** Write down and securely back up this seed phrase immediately
-   - The key is NOT saved to the keyring (that's why it's called "dry-run")
-   
-   **📖 Complete Guide:** See the [Key Management Guide](key-management.md) for detailed instructions on creating, backing up, and managing keys.
-
-3. **Back up your seed phrase securely:**
-   - Write it on paper and store it safely
-   - Or use a metal backup solution
-   - Or store it in encrypted storage
-   - **This is the ONLY way to recover your validator keys**
-
-4. **Initialize with recovery (use your seed phrase):**
-   ```bash
-   ./drive.sh exec -it infinite-mainnet node-init --recover
-   ```
-   
-   **What happens:**
-   - Prompts you to enter your seed phrase (the one you just created and backed up)
-   - Prompts you to enter a moniker (node name)
-   - Initializes the node with your validator keys
-   
-5. **(Optional) Add key to keyring for later use:**
-   ```bash
-   ./drive.sh exec -it infinite-mainnet node-keys add my-validator
-   ```
-   Enter your seed phrase when prompted to add it to the keyring.
-
-**Why use dry-run first?** This approach gives you complete control:
-- You generate the key and back it up yourself
-- You verify your backup before committing
-- You maintain full ownership of your keys
-- You can choose when/if to add the key to the keyring
-
-#### ✅ Simple Node (No Validator)
-
-**If you're NOT running a validator**, you can proceed directly with simple initialization:
+**⚠️ Reminder:** If you're setting up a validator node, add your keys to the keyring first:
 
 ```bash
-cd drive/services/infinite-mainnet
-# Start the container first (if not running)
-./drive.sh up -d
-# Initialize the node
-./drive.sh exec infinite-mainnet node-init
+# Create a new key and add to keyring (if starting fresh):
+./drive.sh exec -it infinite-mainnet node-keys create my-validator
+
+# Add an existing key from seed phrase (if you already have keys):
+./drive.sh exec -it infinite-mainnet node-keys add my-validator
 ```
 
-**What it does:** Creates a new node with default configuration. Generates random keys automatically (not displayed). Suitable for full nodes that won't act as validators.
+### Initialize Node
 
-**Safe to proceed:** No key creation needed - the system handles everything automatically.
+```bash
+# For validator nodes (requires key in keyring):
+./drive.sh exec -it infinite-mainnet node-init --recover
+
+# For simple nodes:
+./drive.sh exec infinite-mainnet node-init
+```
 
 ### Start the Node
 
 ```bash
-# Ensure container is running
-./drive.sh up -d
-# Start the node
 ./drive.sh exec infinite-mainnet node-start
 ```
 
-### Verify Status
+### Check Status
 
 ```bash
-# Check node process status
 ./drive.sh exec infinite-mainnet node-process-status
 ```
+
+**Complete command reference:** See [Node Operations](node-operations.md) for all available commands.
 
 ## Working with Multiple Services
 
