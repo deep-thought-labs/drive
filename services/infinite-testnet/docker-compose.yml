@@ -1,8 +1,8 @@
 services:
-  infinite-mainnet:
+  infinite-testnet:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
     image: deepthoughtlabs/infinite-drive:latest
-    container_name: infinite-mainnet
+    container_name: infinite-testnet
     # User configuration: Uses environment variables PUID and PGID if set, otherwise defaults to 1000:1000
     # To fix permission issues, set these before running docker-compose:
     #   Without sudo: export PUID=$(id -u) && export PGID=$(id -g)
@@ -25,18 +25,18 @@ services:
       # - CONTAINER_PORT: Fixed internal port (do not change: P2P is 26656, RPC is 26657)
       #
       # Port Allocation Strategy (see docs/PORT_ALLOCATION.md):
-      # - Mainnet: 26656 (P2P), 26657 (RPC) - Standard ports (this service)
-      # - Testnet: 26666 (P2P), 26667 (RPC) - +10 from standard
+      # - Mainnet: 26656 (P2P), 26657 (RPC) - Standard ports
+      # - Testnet: 26666 (P2P), 26667 (RPC) - +10 from standard (allows simultaneous execution)
       # - Creative: 26676 (P2P), 26677 (RPC) - +20 from standard
       #
-      # Why edit? If the host port is already in use, change HOST_PORT to a free one.
-      # However, mainnet should use standard ports (26656, 26657) when possible.
+      # NOTE: These ports are different from mainnet to allow running both networks simultaneously.
+      # If you only run testnet (not mainnet), you can change these to 26656:26656 and 26657:26657
       #
       # P2P port for network communication
-      - "26656:26656"
+      - "26666:26656"
       #
       # RPC port for API access
-      - "26657:26657"
+      - "26667:26657"
     
     volumes:
       # Volumes: Persist data outside the container to avoid loss on restart/stop
@@ -49,8 +49,8 @@ services:
       #
       # Examples (include the guion - at the beginning of the line):
       # - ./persistent-data:/home/ubuntu/.infinited             # Default local folder
-      # - /mnt/external-drive/infinite:/home/ubuntu/.infinited  # Store on external drive
-      # - /data/infinite:/home/ubuntu/.infinited                # Store on a dedicated partition or folder
+      # - /mnt/external-drive/infinite-testnet:/home/ubuntu/.infinited  # Store on external drive
+      # - /data/infinite-testnet:/home/ubuntu/.infinited                # Store on a dedicated partition or folder
       - ./persistent-data:/home/ubuntu/.infinited
 
     environment:
@@ -59,9 +59,10 @@ services:
       ##################################################################################
       #                           Chain Identification                                 #
       ##################################################################################
-      NODE_CHAIN_ID: "infinite_421018-1"  # Chain ID for the Infinite network
-      NODE_EVM_CHAIN_ID: "421018"         # EVM Chain ID for compatibility
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-mainet-genesis.json"  
+      NODE_CHAIN_ID: "infinite_421018001-1"  # Chain ID for the Infinite Testnet network
+      NODE_EVM_CHAIN_ID: "421018001"         # EVM Chain ID for compatibility
+      # TODO: Update with official testnet genesis URL when available
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-testnet-genesis.json"  
 
       ##################################################################################
       #                           Network P2P Configuration                            #
@@ -75,9 +76,11 @@ services:
       #
       # example: NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@seed1.infinitedrive.xyz:26656"
       #
+      # TODO: Update with official testnet seed nodes when available
       # (required for initial connection)
-      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656" 
+      NODE_P2P_SEEDS: "" 
 
     ### End environment variables
-  ### End service infinite-mainnet
+  ### End service infinite-testnet
 ### End docker-compose.yml
+

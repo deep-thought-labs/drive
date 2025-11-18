@@ -110,7 +110,7 @@ cd drive/services/infinite-mainnet
 
 **Available Services:**
 - `infinite-mainnet/` - Mainnet blockchain node
-- `infinite-testnet/` - Testnet blockchain node (when available)
+- `infinite-testnet/` - Testnet blockchain node
 
 ## Step 2: Start the Container
 
@@ -334,7 +334,7 @@ cd drive/services/infinite-mainnet
 ./drive.sh up -d
 ./drive.sh exec infinite-mainnet node-ui
 
-# Terminal 2: Testnet node (when available)
+# Terminal 2: Testnet node
 cd drive/services/infinite-testnet
 ./drive.sh up -d
 ./drive.sh exec infinite-testnet node-ui

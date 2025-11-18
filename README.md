@@ -132,6 +132,7 @@ Full blockchain node for **Infinite Improbability Chain** testnet network.
 - [Node Operations](docs/node-operations.md) - Complete guide to node commands
 - [Container Management](docs/container-management.md) - Container management with `drive.sh`
 - [Configuration](docs/configuration.md) - Service configuration guide
+- [Port Allocation](docs/PORT_ALLOCATION.md) - Port allocation strategy for multiple services
 - [Monitoring](docs/monitoring.md) - Monitor your services
 - [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
 - [Key Management](docs/key-management.md) - Comprehensive key management guide

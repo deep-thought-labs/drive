@@ -31,6 +31,10 @@ Complete user guide for managing infrastructure services with Drive. This docume
   - Port configuration
   - Network settings
   - Service-specific settings
+- **[Port Allocation](PORT_ALLOCATION.md)** - Port allocation strategy for multiple services
+  - Standard ports for mainnet
+  - Alternative ports for testnet and other services
+  - Running multiple services simultaneously
 
 ## Monitoring & Maintenance
 
