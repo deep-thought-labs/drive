@@ -124,9 +124,27 @@ docker compose version
 <details>
 <summary><strong>macOS</strong> - Click to expand firewall configuration</summary>
 
+**Understanding macOS Firewall Options:**
+
+macOS provides two ways to configure the firewall. **You can use either method** - they configure the same firewall system:
+
+- **GUI Method (System Settings/Preferences)**: Easy, visual interface. **Recommended for most users.**
+- **Command Line (pfctl)**: Advanced, scriptable configuration. **For advanced users or automation.**
+
 **Note:** If you're configuring macOS firewall remotely via SSH, ensure SSH access is allowed before making changes that might affect your connection.
 
-**Using macOS Firewall (System Preferences):**
+**Which method should you use?**
+- **Use GUI** if you prefer a visual interface and are configuring manually
+- **Use Command Line** if you need to script the configuration or prefer terminal-based tools
+
+---
+
+### Option 1: Using macOS Firewall GUI (Recommended)
+
+**What is this?**
+The macOS built-in firewall GUI provides an easy-to-use interface for managing firewall rules through System Settings (or System Preferences on older macOS versions). This is the simplest method for most users.
+
+**Configuring via GUI:**
 
 1. Open **System Settings** (or **System Preferences** on older macOS)
 2. Go to **Network** → **Firewall** (or **Security & Privacy** → **Firewall**)
@@ -138,7 +156,16 @@ docker compose version
    - Or add a port rule: Allow TCP port `26656` (and `26657` if needed)
 7. Click **OK** to save
 
-**Using Command Line (pfctl):**
+---
+
+### Option 2: Using Command Line (pfctl) - Advanced
+
+**What is pfctl?**
+pfctl (Packet Filter Control) is the command-line interface to macOS's packet filter firewall. It provides direct control over firewall rules and is useful for scripting or advanced configurations.
+
+**⚠️ Important:** pfctl configuration can be complex and may interfere with the GUI settings. Use this method only if you're comfortable with command-line tools and understand macOS firewall architecture.
+
+**Configuring via Command Line:**
 
 ```bash
 # Check current firewall status
@@ -158,23 +185,60 @@ sudo pfctl -a com.apple/250.ApplicationFirewall -t com.apple/250.ApplicationFire
 <details>
 <summary><strong>Linux</strong> - Click to expand firewall configuration</summary>
 
-Linux firewall configuration depends on which firewall service you're using. Choose the method that matches your system:
+**Understanding Linux Firewall Tools:**
+
+Linux systems use different firewall management tools. **You only need ONE of these tools** - they are alternatives to each other, not meant to be used together. Each tool manages the same underlying firewall (iptables/netfilter), but provides different interfaces:
+
+- **UFW (Uncomplicated Firewall)**: Simple, user-friendly firewall tool. **Most common on Ubuntu/Debian systems.**
+- **firewalld (Firewall Daemon)**: Dynamic firewall manager with zones. **Most common on CentOS/RHEL/Fedora systems.**
+- **iptables**: Low-level, direct firewall configuration. **Advanced users only.** Usually pre-installed on all Linux systems.
+
+**Which tool should you use?**
+- Use the tool that's **already installed** on your system (most systems come with one pre-installed)
+- If you're not sure, check which one is installed using the commands below
+- **Do NOT install multiple tools** - they can conflict with each other
+
+**Step 1: Identify Which Firewall Tool You Have**
+
+Run these commands to check which firewall tool is installed on your system:
+
+```bash
+# Check for UFW
+which ufw
+systemctl is-active ufw 2>/dev/null || echo "UFW not active"
+
+# Check for firewalld
+which firewall-cmd
+systemctl is-active firewalld 2>/dev/null || echo "firewalld not active"
+
+# Check for iptables (usually always present)
+which iptables
+```
+
+**Based on the results:**
+- If `ufw` is found → Use **UFW** (go to UFW section below)
+- If `firewall-cmd` is found → Use **firewalld** (go to firewalld section below)
+- If only `iptables` is found → Use **iptables** (go to iptables section below)
+- If none are active → Install UFW (recommended for beginners) or firewalld
+
+---
+
+### Option 1: Using UFW (Recommended for Ubuntu/Debian)
+
+**What is UFW?**
+UFW (Uncomplicated Firewall) is a simple, user-friendly interface for managing iptables. It's the default firewall tool on Ubuntu and most Debian-based systems. It's designed to be easy to use while still being powerful enough for most use cases.
 
 **Installing UFW (if not already installed):**
 
-UFW is usually pre-installed on Ubuntu/Debian systems. To check if it's installed:
+UFW is usually pre-installed on Ubuntu/Debian systems. If it's not installed:
 
 ```bash
-# Check if UFW is installed
-which ufw
-
-# If not installed, install it:
 # Ubuntu/Debian:
 sudo apt-get update
 sudo apt-get install ufw
 ```
 
-**Using UFW (Ubuntu/Debian - Most Common):**
+**Configuring UFW:**
 
 ```bash
 # Check UFW status
@@ -203,9 +267,16 @@ sudo ufw enable
 sudo ufw status numbered
 ```
 
+---
+
+### Option 2: Using firewalld (Recommended for CentOS/RHEL/Fedora)
+
+**What is firewalld?**
+firewalld (Firewall Daemon) is a dynamic firewall manager that uses zones and services to manage firewall rules. It's the default firewall tool on CentOS, RHEL, and Fedora systems. It provides more advanced features like runtime configuration changes without losing connections.
+
 **Installing firewalld (if not already installed):**
 
-firewalld is usually pre-installed on CentOS/RHEL/Fedora systems. To check if it's installed:
+firewalld is usually pre-installed on CentOS/RHEL/Fedora systems. If it's not installed:
 
 ```bash
 # Check if firewalld is installed
@@ -225,7 +296,7 @@ sudo systemctl start firewalld
 sudo systemctl enable firewalld
 ```
 
-**Using firewalld (CentOS/RHEL/Fedora):**
+**Configuring firewalld:**
 
 ```bash
 # Check firewalld status
@@ -254,6 +325,18 @@ sudo firewall-cmd --reload
 sudo firewall-cmd --list-ports
 ```
 
+---
+
+### Option 3: Using iptables (Advanced Users Only)
+
+**What is iptables?**
+iptables is the low-level, direct interface to the Linux kernel's netfilter firewall. It provides the most control but requires more technical knowledge. Most systems have iptables installed, but it's usually managed through UFW or firewalld. Only use iptables directly if:
+- You're an advanced user
+- You need fine-grained control
+- UFW or firewalld are not available or not suitable for your needs
+
+**⚠️ Important:** If you're using UFW or firewalld, **do NOT** configure iptables directly - they will conflict. Disable UFW/firewalld first if you want to use iptables directly.
+
 **Installing iptables-persistent (for saving rules):**
 
 iptables is usually pre-installed on Linux systems, but you may need to install `iptables-persistent` to save rules permanently:
@@ -267,7 +350,7 @@ sudo apt-get install iptables-persistent
 # Answer "Yes" to both IPv4 and IPv6 rules
 ```
 
-**Using iptables (Advanced/Manual Configuration):**
+**Configuring iptables:**
 
 ```bash
 # ⚠️ CRITICAL: Allow SSH port FIRST (if accessing remotely)
@@ -305,9 +388,27 @@ sudo iptables-save > /etc/iptables/rules.v4
 <details>
 <summary><strong>Windows</strong> - Click to expand firewall configuration</summary>
 
+**Understanding Windows Firewall Options:**
+
+Windows provides two ways to configure the firewall. **You can use either method** - they configure the same Windows Firewall system:
+
+- **GUI Method (Windows Defender Firewall)**: Easy, visual interface. **Recommended for most users.**
+- **PowerShell (Command Line)**: Fast, scriptable configuration. **For advanced users or automation.**
+
 **Note:** If you're configuring Windows Firewall remotely via RDP or SSH, ensure your remote access port (RDP: 3389, SSH: 22) is allowed before making changes. Windows Firewall typically doesn't block existing connections, but it's good practice to verify.
 
-**Using Windows Firewall (GUI):**
+**Which method should you use?**
+- **Use GUI** if you prefer a visual interface and are configuring manually
+- **Use PowerShell** if you need to script the configuration, prefer command-line tools, or want to configure multiple ports quickly
+
+---
+
+### Option 1: Using Windows Firewall GUI (Recommended)
+
+**What is this?**
+Windows Defender Firewall provides a graphical interface for managing firewall rules through the Windows Control Panel. This is the simplest method for most users and provides a clear visual representation of your firewall rules.
+
+**Configuring via GUI:**
 
 1. Open **Windows Defender Firewall** (search for "Firewall" in Start menu)
 2. Click **Advanced settings** on the left
@@ -323,7 +424,14 @@ sudo iptables-save > /etc/iptables/rules.v4
 8. Give it a name (e.g., "Infinite Drive Mainnet P2P") → **Finish**
 9. Repeat for each port you need
 
-**Using PowerShell (Command Line):**
+---
+
+### Option 2: Using PowerShell (Command Line) - Advanced
+
+**What is PowerShell NetFirewallRule?**
+PowerShell's `New-NetFirewallRule` cmdlet provides a command-line interface to Windows Firewall. It's faster for configuring multiple ports and can be scripted for automation.
+
+**Configuring via PowerShell:**
 
 ```powershell
 # Run PowerShell as Administrator
@@ -346,11 +454,78 @@ Get-NetFirewallRule -DisplayName "Infinite Drive*"
 
 </details>
 
-**Installing Verification Tools:**
+---
 
-To verify that ports are accessible, you may need to install network testing tools:
+## Verifying Port Access (Optional)
+
+**What are verification tools?**
+
+After configuring your firewall, you may want to verify that the ports are actually accessible. These are **optional** tools that help you test if your firewall configuration is working correctly:
+
+- **telnet**: A network protocol and command-line tool used to test connectivity to a specific port. It's simple but may not be installed by default on all systems.
+- **netcat (nc)**: A versatile networking utility that can read and write data across network connections. It's more powerful than telnet and often pre-installed on Linux systems.
+
+**When to use these tools:**
+- To verify that your firewall rules are working correctly
+- To test if ports are accessible from other machines on your network
+- To troubleshoot connection issues
+
+**Note:** These tools are **optional** - your node will work fine without them. They're only useful for verification and troubleshooting.
+
+---
+
+<details>
+<summary><strong>macOS - Installing Verification Tools</strong></summary>
 
 **Installing telnet:**
+
+telnet is not included by default on newer macOS versions. To install it:
+
+```bash
+# Install via Homebrew (if you have Homebrew installed)
+brew install telnet
+
+# If you don't have Homebrew, install it first:
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**Installing netcat (nc):**
+
+netcat is usually pre-installed on macOS. To check if it's available:
+
+```bash
+# Check if netcat is installed
+which nc
+
+# If not installed, install via Homebrew:
+brew install netcat
+```
+
+**Verifying Port Access on macOS:**
+
+```bash
+# Test from another machine on your network
+# Replace YOUR_IP with your machine's IP address
+
+# Using telnet:
+telnet YOUR_IP 26656
+
+# Or using netcat:
+nc -zv YOUR_IP 26656
+
+# To test from the same machine (localhost):
+nc -zv localhost 26656
+```
+
+</details>
+
+<details>
+<summary><strong>Linux - Installing Verification Tools</strong></summary>
+
+**Installing telnet:**
+
+telnet may not be installed by default on all Linux distributions:
+
 ```bash
 # Ubuntu/Debian:
 sudo apt-get update
@@ -360,14 +535,12 @@ sudo apt-get install telnet
 sudo yum install telnet
 # Or on newer versions:
 sudo dnf install telnet
-
-# macOS:
-# telnet is not included by default on newer macOS versions
-# Install via Homebrew:
-brew install telnet
 ```
 
 **Installing netcat (nc):**
+
+netcat is often pre-installed on Linux systems, but if not:
+
 ```bash
 # Ubuntu/Debian:
 sudo apt-get update
@@ -377,31 +550,79 @@ sudo apt-get install netcat
 sudo yum install nc
 # Or on newer versions:
 sudo dnf install nc
-
-# macOS:
-# netcat is usually pre-installed, but if not:
-brew install netcat
 ```
 
-**Verifying Port Access:**
-
-After configuring your firewall, you can verify that the ports are accessible:
+**Verifying Port Access on Linux:**
 
 ```bash
-# From another machine on your network, test if the port is open
+# Test from another machine on your network
 # Replace YOUR_IP with your machine's IP address
 
 # Using telnet:
 telnet YOUR_IP 26656
 
-# Or using netcat (if available):
+# Or using netcat (recommended):
 nc -zv YOUR_IP 26656
 
 # To test from the same machine (localhost):
 nc -zv localhost 26656
 ```
 
-**Important:** If you're behind a router/NAT, you may also need to configure port forwarding on your router. Consult your router's documentation for port forwarding setup.
+</details>
+
+<details>
+<summary><strong>Windows - Installing Verification Tools</strong></summary>
+
+**Installing telnet:**
+
+telnet is not enabled by default on Windows, but it can be enabled:
+
+```powershell
+# Run PowerShell as Administrator
+
+# Enable telnet client (Windows 10/11)
+Enable-WindowsOptionalFeature -Online -FeatureName TelnetClient
+
+# Or using Command Prompt as Administrator:
+# dism /online /Enable-Feature /FeatureName:TelnetClient
+```
+
+**Alternative: Using Test-NetConnection (Built-in PowerShell)**
+
+Windows includes a built-in PowerShell cmdlet that doesn't require installation:
+
+```powershell
+# Test if a port is open (from PowerShell)
+Test-NetConnection -ComputerName YOUR_IP -Port 26656
+
+# Test localhost:
+Test-NetConnection -ComputerName localhost -Port 26656
+```
+
+**Installing netcat (nc):**
+
+netcat is not included with Windows by default. You can:
+
+1. **Use Test-NetConnection instead** (recommended - no installation needed)
+2. **Download netcat for Windows** from a trusted source (not recommended unless necessary)
+
+**Verifying Port Access on Windows:**
+
+```powershell
+# Using Test-NetConnection (recommended - no installation needed)
+Test-NetConnection -ComputerName YOUR_IP -Port 26656
+
+# Using telnet (if enabled):
+telnet YOUR_IP 26656
+```
+
+</details>
+
+**Important Notes:**
+- These tools are **optional** - they're only for verification
+- If you're behind a router/NAT, you may also need to configure port forwarding on your router
+- Testing from the same machine (localhost) only verifies the firewall allows local connections
+- Testing from another machine verifies external access is working
 
 ## Step 1: Navigate to Your Service
 
