@@ -101,9 +101,18 @@ docker compose version
 
 ### Configuring Firewall Ports
 
+**⚠️ CRITICAL WARNING - SSH PORT MUST BE OPEN FIRST:**
+
+**If you are configuring the firewall remotely via SSH, you MUST enable the SSH port (usually port 22) BEFORE applying any firewall rules. Otherwise, you will lose your SSH connection and may be locked out of your server.**
+
+**Always enable SSH first, then configure other ports.**
+
 **Important:** For your node to participate in the blockchain network, you need to open the P2P port (and optionally the RPC port) in your system's firewall. This allows other nodes to connect to your node.
 
 **Required Ports:**
+- **SSH Port** (CRITICAL if accessing remotely): Required for remote access
+  - Default SSH port: `22` (or your custom SSH port)
+  - **⚠️ MUST be enabled FIRST if configuring firewall remotely**
 - **P2P Port** (required): Used for peer-to-peer network communication
   - Mainnet: `26656`
   - Testnet: `26666`
@@ -114,6 +123,8 @@ docker compose version
 
 <details>
 <summary><strong>macOS</strong> - Click to expand firewall configuration</summary>
+
+**Note:** If you're configuring macOS firewall remotely via SSH, ensure SSH access is allowed before making changes that might affect your connection.
 
 **Using macOS Firewall (System Preferences):**
 
@@ -169,6 +180,12 @@ sudo apt-get install ufw
 # Check UFW status
 sudo ufw status
 
+# ⚠️ CRITICAL: Allow SSH port FIRST (if accessing remotely)
+# This prevents losing your SSH connection when enabling the firewall
+sudo ufw allow 22/tcp
+# Or if you use a custom SSH port, replace 22 with your port:
+# sudo ufw allow YOUR_SSH_PORT/tcp
+
 # Allow P2P port (mainnet)
 sudo ufw allow 26656/tcp
 
@@ -214,6 +231,12 @@ sudo systemctl enable firewalld
 # Check firewalld status
 sudo firewall-cmd --state
 
+# ⚠️ CRITICAL: Allow SSH service FIRST (if accessing remotely)
+# This prevents losing your SSH connection when enabling the firewall
+sudo firewall-cmd --permanent --add-service=ssh
+# Or if you use a custom SSH port:
+# sudo firewall-cmd --permanent --add-port=YOUR_SSH_PORT/tcp
+
 # Allow P2P port (mainnet)
 sudo firewall-cmd --permanent --add-port=26656/tcp
 
@@ -247,6 +270,12 @@ sudo apt-get install iptables-persistent
 **Using iptables (Advanced/Manual Configuration):**
 
 ```bash
+# ⚠️ CRITICAL: Allow SSH port FIRST (if accessing remotely)
+# This prevents losing your SSH connection when applying firewall rules
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+# Or if you use a custom SSH port, replace 22 with your port:
+# sudo iptables -A INPUT -p tcp --dport YOUR_SSH_PORT -j ACCEPT
+
 # Allow P2P port (mainnet)
 sudo iptables -A INPUT -p tcp --dport 26656 -j ACCEPT
 
@@ -275,6 +304,8 @@ sudo iptables-save > /etc/iptables/rules.v4
 
 <details>
 <summary><strong>Windows</strong> - Click to expand firewall configuration</summary>
+
+**Note:** If you're configuring Windows Firewall remotely via RDP or SSH, ensure your remote access port (RDP: 3389, SSH: 22) is allowed before making changes. Windows Firewall typically doesn't block existing connections, but it's good practice to verify.
 
 **Using Windows Firewall (GUI):**
 
