@@ -61,7 +61,7 @@ services:
       ##################################################################################
       NODE_CHAIN_ID: "infinite_421018-1"  # Chain ID for the Infinite network
       NODE_EVM_CHAIN_ID: "421018"         # EVM Chain ID for compatibility
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-mainet-genesis.json"  
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/main/services/infinite-mainnet/genesis.json"  
 
       ##################################################################################
       #                           Network P2P Configuration                            #
