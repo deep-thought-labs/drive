@@ -62,6 +62,16 @@ services:
       NODE_CHAIN_ID: "qom_766-1"  # Chain ID for the QOM network
       NODE_EVM_CHAIN_ID: "766"     # EVM Chain ID for compatibility (update with actual value)
       NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/babelfish-vm/main/resources/genesis.json"  # Update with actual genesis URL
+      
+      ##################################################################################
+      #                    Conditional Argument Flags                                 #
+      ##################################################################################
+      # These flags control whether optional arguments are included in the start command
+      # See services/ENVIRONMENT_VARIABLES.md for detailed documentation
+      #
+      # EVM Chain ID flag: QOM (qomd) does not support --evm.evm-chain-id argument
+      # Set to false to disable this argument (auto-detection would also set it to false)
+      NODE_FLAG_EVM_CHAIN_ID_ENABLED: "false"
 
       ##################################################################################
       #                           Network P2P Configuration                            #
