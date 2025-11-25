@@ -4,7 +4,8 @@
 # Works with or without sudo
 # Supports all docker-compose commands including 'exec' for running commands inside containers
 
-set -e
+# Don't use set -e here - we need to handle errors manually to show logs even if docker compose has warnings
+# set -e
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -71,20 +72,20 @@ fi
 
 # Execute docker-compose with all passed arguments
 # If sudo was used to run this script, we need to use sudo for docker-compose too
+EXIT_CODE=0
 if [ -n "$SUDO_USER" ]; then
     # Running with sudo, so use sudo for docker-compose
-    sudo -E $DOCKER_COMPOSE_CMD "$@"
-    EXIT_CODE=$?
+    sudo -E $DOCKER_COMPOSE_CMD "$@" || EXIT_CODE=$?
 else
     # Running without sudo, execute normally
     # If Docker requires sudo, the user will see Docker's permission error
     # Documentation explains how to use sudo ./drive.sh or configure Docker
-    $DOCKER_COMPOSE_CMD "$@"
-    EXIT_CODE=$?
+    $DOCKER_COMPOSE_CMD "$@" || EXIT_CODE=$?
 fi
 
-# If 'up -d' was executed successfully, show logs automatically
-if [ "$SHOW_LOGS" = true ] && [ $EXIT_CODE -eq 0 ]; then
+# If 'up -d' was executed, show logs automatically (even if exit code is non-zero)
+# This ensures logs are shown even if docker compose reports warnings
+if [ "$SHOW_LOGS" = true ]; then
     echo ""
     echo "📋 Container started in detached mode. Waiting for initialization..."
     echo "   (This may take a moment while the container downloads and configures the binary)"
@@ -133,10 +134,25 @@ if [ "$SHOW_LOGS" = true ] && [ $EXIT_CODE -eq 0 ]; then
     echo ""
     
     # Show logs from the beginning and follow them (with trap to handle Ctrl+C gracefully)
-    trap 'echo ""; echo "ℹ️  Logs view stopped. Container continues running."; echo "   To view logs again: ./drive.sh logs -f"; exit 0' INT
+    # Use a function for cleanup to ensure it's called even if the script is interrupted
+    cleanup_logs() {
+        echo ""
+        echo "ℹ️  Logs view stopped. Container continues running."
+        echo "   To view logs again: ./drive.sh logs -f"
+        exit 0
+    }
+    
+    # Set trap for INT (Ctrl+C) and TERM signals
+    trap cleanup_logs INT TERM
+    
+    # Show logs - this will block until Ctrl+C is pressed
+    # Use || true to prevent script from exiting if logs command fails
     if [ -n "$SUDO_USER" ]; then
-        sudo -E $DOCKER_COMPOSE_CMD logs -f --tail=0
+        sudo -E $DOCKER_COMPOSE_CMD logs -f --tail=0 || cleanup_logs
     else
-        $DOCKER_COMPOSE_CMD logs -f --tail=0
+        $DOCKER_COMPOSE_CMD logs -f --tail=0 || cleanup_logs
     fi
+    
+    # If we get here, logs command exited normally (shouldn't happen with -f, but handle it)
+    cleanup_logs
 fi
