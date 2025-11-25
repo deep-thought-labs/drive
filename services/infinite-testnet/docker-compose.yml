@@ -1,16 +1,15 @@
 services:
   infinite-testnet:
-    # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:latest
+    # Core service settings (build, name, user, restart) - Testing with local build
+    # This builds the image locally from the Dockerfile in dev/ directory
+    # Build context: From services/infinite-testnet/, go up two levels (../../) then into dev/
+    build:
+      context: ../../dev
+      dockerfile: Dockerfile
+    image: infinite-drive:testnet-local
     container_name: infinite-testnet
-    # User configuration: Uses environment variables PUID and PGID if set, otherwise defaults to 1000:1000
-    # To fix permission issues, set these before running docker-compose:
-    #   Without sudo: export PUID=$(id -u) && export PGID=$(id -g)
-    #   With sudo:    export PUID=${SUDO_UID:-$(id -u)} && export PGID=${SUDO_GID:-$(id -g)}
-    # Or run inline: PUID=$(id -u) PGID=$(id -g) docker-compose up -d
-    # Note: Works with or without sudo - if using sudo, it will use SUDO_UID/SUDO_GID automatically
-    user: "${PUID:-1000}:${PGID:-1000}"
     restart: unless-stopped
+    # Note: Container runs as user 1000:1000 (set in Dockerfile), no need for user: directive
 
     ##################################################################################
     #                       Editable Section Starts Here                             #
