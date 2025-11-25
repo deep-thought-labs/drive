@@ -33,6 +33,7 @@ fi
 # is accessible to UID 1000. We do this by:
 # 1. Setting permissions to allow group/others write (775 or 777)
 # 2. Or changing ownership to UID 1000 if we have sudo rights
+# Note: Container always runs as UID 1000:1000 (set in Dockerfile), so we configure for that
 if [ -d "persistent-data" ]; then
     # Try to fix permissions - give write access to group and others
     # This allows the container user (UID 1000) to write even if owned by different user

@@ -52,6 +52,8 @@ services:
 
     environment:
       # Environment variables: Required and Optional variables used for the node configuration.
+      # Note: Container runs as user 1000:1000 (set in Dockerfile), so PUID/PGID not needed here
+      # drive.sh configures permissions on the host side for the persistent-data directory
 
       ##################################################################################
       #                           Chain Identification                                 #
