@@ -18,65 +18,30 @@ services:
     ##################################################################################
 
     ports:
-      # Ports mapping: Expose internal container ports to the host
-      #
-      # Format: "HOST_PORT:CONTAINER_PORT"
-      # - HOST_PORT: Port on your machine (can be changed to avoid conflicts)
-      # - CONTAINER_PORT: Fixed internal port (do not change: P2P is 26656, RPC is 26657)
-      #
-      # Port Allocation Strategy (see docs/PORT_ALLOCATION.md):
-      # - Mainnet: 26656 (P2P), 26657 (RPC) - Standard ports (this service)
-      # - Testnet: 26666 (P2P), 26667 (RPC) - +10 from standard
-      # - Creative: 26676 (P2P), 26677 (RPC) - +20 from standard
-      #
-      # Why edit? If the host port is already in use, change HOST_PORT to a free one.
-      # However, mainnet should use standard ports (26656, 26657) when possible.
-      #
-      # P2P port for network communication
-      - "26656:26656"
-      #
-      # RPC port for API access
-      - "26657:26657"
+      # See services/PORTS.md for port allocation strategy and conflict resolution
+      - "26656:26656"  # P2P
+      - "26657:26657"  # RPC
     
     volumes:
-      # Volumes: Persist data outside the container to avoid loss on restart/stop
-      #
-      # Format: "host/path:container/path"
-      # - This mounts './persistent-data' on host to '/home/ubuntu/.infinited' inside container
-      # - Purpose: Keeps blockchain data (config, keys, state) safe and persistent
-      #
-      # Note: Do not modify unless you need a custom data location (not recommended for most users).
-      #
-      # Examples (include the guion - at the beginning of the line):
-      # - ./persistent-data:/home/ubuntu/.infinited             # Default local folder
-      # - /mnt/external-drive/infinite:/home/ubuntu/.infinited  # Store on external drive
-      # - /data/infinite:/home/ubuntu/.infinited                # Store on a dedicated partition or folder
       - ./persistent-data:/home/ubuntu/.infinited
 
     environment:
-      # Environment variables: Required and Optional variables used for the node configuration.
+      # For complete documentation of all environment variables, see: services/ENVIRONMENT_VARIABLES.md
+      # For port allocation and configuration, see: services/PORTS.md
 
       ##################################################################################
       #                           Chain Identification                                 #
       ##################################################################################
-      NODE_CHAIN_ID: "infinite_421018-1"  # Chain ID for the Infinite network
-      NODE_EVM_CHAIN_ID: "421018"         # EVM Chain ID for compatibility
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-mainet-genesis.json"  
+      NODE_CHAIN_ID: "infinite_421018-1"
+      NODE_EVM_CHAIN_ID: "421018"
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-mainet-genesis.json"
 
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
-
-      # Seed nodes for P2P discovery
-      #
-      # format for single seed:    "id@ip:port"
-      # format using domain names: "id@domain.com:port" or "id@subdomain.domain.com:port"
-      # When using multiple seeds, use a comma to separate them: "id1@ip1:port,id2@example.com:port,id3@ip3:port"
-      #
-      # example: NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@seed1.infinitedrive.xyz:26656"
-      #
-      # (required for initial connection)
-      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656" 
+      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656"
+      # NODE_PERSISTENT_PEERS: ""
+      # NODE_P2P_EXTERNAL_ADDRESS: "" 
 
     ### End environment variables
   ### End service infinite-mainnet
