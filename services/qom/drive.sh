@@ -57,14 +57,45 @@ else
     fi
 fi
 
+# Check if this is an 'up' command with -d flag (detached mode)
+SHOW_LOGS=false
+if [ "$1" = "up" ]; then
+    # Check if -d or --detach flag is present
+    for arg in "$@"; do
+        if [ "$arg" = "-d" ] || [ "$arg" = "--detach" ]; then
+            SHOW_LOGS=true
+            break
+        fi
+    done
+fi
+
 # Execute docker-compose with all passed arguments
 # If sudo was used to run this script, we need to use sudo for docker-compose too
 if [ -n "$SUDO_USER" ]; then
     # Running with sudo, so use sudo for docker-compose
     sudo -E $DOCKER_COMPOSE_CMD "$@"
+    EXIT_CODE=$?
 else
     # Running without sudo, execute normally
     # If Docker requires sudo, the user will see Docker's permission error
     # Documentation explains how to use sudo ./drive.sh or configure Docker
     $DOCKER_COMPOSE_CMD "$@"
+    EXIT_CODE=$?
+fi
+
+# If 'up -d' was executed successfully, show logs automatically
+if [ "$SHOW_LOGS" = true ] && [ $EXIT_CODE -eq 0 ]; then
+    echo ""
+    echo "📋 Container started in detached mode. Showing logs..."
+    echo "   (Press Ctrl+C to stop viewing logs - container will continue running)"
+    echo ""
+    # Wait a moment for container to start and generate initial logs
+    sleep 2
+    # Show logs and follow them (with trap to handle Ctrl+C gracefully)
+    trap 'echo ""; echo "ℹ️  Logs view stopped. Container continues running."; echo "   To view logs again: ./drive.sh logs -f"; exit 0' INT
+    if [ -n "$SUDO_USER" ]; then
+        sudo -E $DOCKER_COMPOSE_CMD logs -f
+    else
+        $DOCKER_COMPOSE_CMD logs -f
+    fi
 fi
