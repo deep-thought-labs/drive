@@ -91,27 +91,63 @@ if [ "$SHOW_LOGS" = true ] && [ $EXIT_CODE -eq 0 ]; then
     echo ""
     
     # Wait for container to actually start and begin processing
-    # Check if container is running, with timeout
-    CONTAINER_NAME=$(grep "container_name:" docker-compose.yml 2>/dev/null | awk '{print $2}' | tr -d '"' || echo "")
+    # Get container name from docker-compose.yml or from docker compose ps
+    CONTAINER_NAME=$(grep "container_name:" docker-compose.yml 2>/dev/null | awk '{print $2}' | tr -d '"' | tr -d "'" || echo "")
     if [ -z "$CONTAINER_NAME" ]; then
-        # Try to get container name from docker compose ps
-        CONTAINER_NAME=$($DOCKER_COMPOSE_CMD ps -q 2>/dev/null | head -1)
+        # Try to get container name from docker compose ps (service name)
+        SERVICE_NAME=$(grep "^[[:space:]]*[a-zA-Z0-9_-]*:" docker-compose.yml 2>/dev/null | head -1 | awk -F: '{print $1}' | xargs || echo "")
+        if [ -n "$SERVICE_NAME" ]; then
+            # Use service name to get container name
+            if [ -n "$SUDO_USER" ]; then
+                CONTAINER_NAME=$(sudo -E $DOCKER_COMPOSE_CMD ps -q "$SERVICE_NAME" 2>/dev/null | xargs -I {} docker inspect --format '{{.Name}}' {} 2>/dev/null | sed 's|^/||' | head -1 || echo "")
+            else
+                CONTAINER_NAME=$($DOCKER_COMPOSE_CMD ps -q "$SERVICE_NAME" 2>/dev/null | xargs -I {} docker inspect --format '{{.Name}}' {} 2>/dev/null | sed 's|^/||' | head -1 || echo "")
+            fi
+        fi
     fi
     
-    # Wait for container to be running (up to 10 seconds)
-    MAX_WAIT=10
+    # Wait for container to be running and generating logs (up to 15 seconds)
+    MAX_WAIT=15
     WAIT_COUNT=0
+    CONTAINER_READY=false
+    
     while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+        # Check if container is running
         if [ -n "$CONTAINER_NAME" ]; then
             if docker ps --format "{{.Names}}" 2>/dev/null | grep -q "^${CONTAINER_NAME}$"; then
-                # Container is running, wait a bit more for entrypoint to start
-                sleep 1
-                break
+                # Container is running, check if it has started generating logs
+                if [ -n "$SUDO_USER" ]; then
+                    LOG_COUNT=$(sudo -E $DOCKER_COMPOSE_CMD logs --tail=1 2>/dev/null | wc -l)
+                else
+                    LOG_COUNT=$($DOCKER_COMPOSE_CMD logs --tail=1 2>/dev/null | wc -l)
+                fi
+                if [ "$LOG_COUNT" -gt 0 ]; then
+                    CONTAINER_READY=true
+                    break
+                fi
+            fi
+        else
+            # If we can't find container name, just check if any container from this compose is running
+            if [ -n "$SUDO_USER" ]; then
+                if sudo -E $DOCKER_COMPOSE_CMD ps 2>/dev/null | grep -q "Up"; then
+                    CONTAINER_READY=true
+                    break
+                fi
+            else
+                if $DOCKER_COMPOSE_CMD ps 2>/dev/null | grep -q "Up"; then
+                    CONTAINER_READY=true
+                    break
+                fi
             fi
         fi
         sleep 1
         WAIT_COUNT=$((WAIT_COUNT + 1))
     done
+    
+    # Give entrypoint a moment to start generating logs
+    if [ "$CONTAINER_READY" = true ]; then
+        sleep 1
+    fi
     
     echo "📋 Showing container logs from the beginning..."
     echo "   (Press Ctrl+C to stop viewing logs - container will continue running)"
