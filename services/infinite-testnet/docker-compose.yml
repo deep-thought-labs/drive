@@ -2,9 +2,9 @@ services:
   infinite-testnet:
     # Core service settings (build, name, user, restart) - Testing with local build
     # This builds the image locally from the Dockerfile in dev/ directory
-    # Build context: From services/infinite-testnet/, go up two levels (../../) then into dev/
+    # Build context: From services/infinite-testnet/, go up three levels (../../../) to project root, then into dev/
     build:
-      context: ../../dev
+      context: ../../../dev
       dockerfile: Dockerfile
     image: infinite-drive:testnet-local
     container_name: infinite-testnet
