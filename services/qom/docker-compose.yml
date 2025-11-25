@@ -1,0 +1,102 @@
+services:
+  qom-node:
+    # Core service settings (build, name, user, restart) - QOM blockchain node
+    # This builds the image locally from the Dockerfile in dev/ directory
+    build:
+      context: ../../../dev
+      dockerfile: Dockerfile
+    image: infinite-drive:qom
+    container_name: qom-node
+    restart: unless-stopped
+
+    ##################################################################################
+    #                       Editable Section Starts Here                             #
+    # Customize ports, volumes, and environment variables as needed below.           #
+    ##################################################################################
+
+    ports:
+      # Ports mapping: Expose internal container ports to the host
+      #
+      # Format: "HOST_PORT:CONTAINER_PORT"
+      # - HOST_PORT: Port on your machine (can be changed to avoid conflicts)
+      # - CONTAINER_PORT: Fixed internal port (do not change: P2P is 26656, RPC is 26657)
+      #
+      # Port Allocation Strategy (see docs/PORT_ALLOCATION.md):
+      # - Mainnet: 26656 (P2P), 26657 (RPC) - Standard ports
+      # - Testnet: 26666 (P2P), 26667 (RPC) - +10 from standard (allows simultaneous execution)
+      # - Creative: 26676 (P2P), 26677 (RPC) - +20 from standard
+      #
+      # NOTE: These ports are different from mainnet to allow running both networks simultaneously.
+      # If you only run testnet (not mainnet), you can change these to 26656:26656 and 26657:26657
+      #
+      # P2P port for network communication
+      - "26666:26656"
+      #
+      # RPC port for API access
+      - "26667:26657"
+    
+    volumes:
+      # Volumes: Persist data outside the container to avoid loss on restart/stop
+      #
+      # Format: "host/path:container/path"
+      # - This mounts './persistent-data' on host to '/home/ubuntu/.qomd' inside container
+      # - Purpose: Keeps blockchain data (config, keys, state) safe and persistent
+      #
+      # Note: Using NODE_ALT_HOME for QOM blockchain (custom home directory)
+      #
+      # Examples (include the guion - at the beginning of the line):
+      # - ./persistent-data:/home/ubuntu/.qomd             # Default local folder
+      # - /mnt/external-drive/qom:/home/ubuntu/.qomd  # Store on external drive
+      # - /data/qom:/home/ubuntu/.qomd                # Store on a dedicated partition or folder
+      - ./persistent-data:/home/ubuntu/.qomd
+
+    environment:
+      # Environment variables: Required and Optional variables used for the node configuration.
+
+      ##################################################################################
+      #                           Chain Identification                                 #
+      ##################################################################################
+      # TODO: Update with actual QOM chain configuration
+      NODE_CHAIN_ID: "qom_766-1"  # Chain ID for the QOM network
+      NODE_EVM_CHAIN_ID: "766"     # EVM Chain ID for compatibility (update with actual value)
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/babelfish-vm/main/resources/genesis.json"  # Update with actual genesis URL
+
+      ##################################################################################
+      #                           Network P2P Configuration                            #
+      ##################################################################################
+
+      # Seed nodes for P2P discovery
+      #
+      # format for single seed:    "id@ip:port"
+      # format using domain names: "id@domain.com:port" or "id@subdomain.domain.com:port"
+      # When using multiple seeds, use a comma to separate them: "id1@ip1:port,id2@example.com:port,id3@ip3:port"
+      #
+      # TODO: Update with actual QOM seed nodes
+      # (required for initial connection)
+      # NODE_P2P_SEEDS: "seed1@example.com:26656,seed2@example.com:26656"
+      
+      # Optional: External address for P2P discovery
+      # NODE_P2P_EXTERNAL_ADDRESS: ""
+      
+      # Optional: Persistent peers
+      # NODE_PERSISTENT_PEERS: ""
+
+      ##################################################################################
+      #                    Alternative Binary Configuration (QOM)                      #
+      ##################################################################################
+      # Using alternative binary for QOM blockchain instead of default Infinite binary
+      
+      # URLs for alternative binary (one per architecture) - REQUIRED
+      NODE_ALT_BINARY_URL_AMD64: "https://github.com/WizardLatino/test-qom-node/releases/download/v1.0.1/qomd-linux-amd64"
+      # NODE_ALT_BINARY_URL_ARM64: ""  # QOM only supports AMD64, leave empty or comment out
+      
+      # Name of alternative binary - REQUIRED
+      NODE_ALT_BINARY_NAME: "qomd"
+      
+      # Custom home directory for QOM node
+      NODE_ALT_HOME: "/home/ubuntu/.qomd"
+
+    ### End environment variables
+  ### End service qom-node
+### End docker-compose.yml
+
