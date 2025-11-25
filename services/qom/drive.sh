@@ -86,16 +86,42 @@ fi
 # If 'up -d' was executed successfully, show logs automatically
 if [ "$SHOW_LOGS" = true ] && [ $EXIT_CODE -eq 0 ]; then
     echo ""
-    echo "📋 Container started in detached mode. Showing logs..."
+    echo "📋 Container started in detached mode. Waiting for initialization..."
+    echo "   (This may take a moment while the container downloads and configures the binary)"
+    echo ""
+    
+    # Wait for container to actually start and begin processing
+    # Check if container is running, with timeout
+    CONTAINER_NAME=$(grep "container_name:" docker-compose.yml 2>/dev/null | awk '{print $2}' | tr -d '"' || echo "")
+    if [ -z "$CONTAINER_NAME" ]; then
+        # Try to get container name from docker compose ps
+        CONTAINER_NAME=$($DOCKER_COMPOSE_CMD ps -q 2>/dev/null | head -1)
+    fi
+    
+    # Wait for container to be running (up to 10 seconds)
+    MAX_WAIT=10
+    WAIT_COUNT=0
+    while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+        if [ -n "$CONTAINER_NAME" ]; then
+            if docker ps --format "{{.Names}}" 2>/dev/null | grep -q "^${CONTAINER_NAME}$"; then
+                # Container is running, wait a bit more for entrypoint to start
+                sleep 1
+                break
+            fi
+        fi
+        sleep 1
+        WAIT_COUNT=$((WAIT_COUNT + 1))
+    done
+    
+    echo "📋 Showing container logs from the beginning..."
     echo "   (Press Ctrl+C to stop viewing logs - container will continue running)"
     echo ""
-    # Wait a moment for container to start and generate initial logs
-    sleep 2
-    # Show logs and follow them (with trap to handle Ctrl+C gracefully)
+    
+    # Show logs from the beginning and follow them (with trap to handle Ctrl+C gracefully)
     trap 'echo ""; echo "ℹ️  Logs view stopped. Container continues running."; echo "   To view logs again: ./drive.sh logs -f"; exit 0' INT
     if [ -n "$SUDO_USER" ]; then
-        sudo -E $DOCKER_COMPOSE_CMD logs -f
+        sudo -E $DOCKER_COMPOSE_CMD logs -f --tail=0
     else
-        $DOCKER_COMPOSE_CMD logs -f
+        $DOCKER_COMPOSE_CMD logs -f --tail=0
     fi
 fi
