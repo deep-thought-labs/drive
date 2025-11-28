@@ -19,8 +19,20 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/services/node0-infinite.md for complete port configuration
+      # Required ports
       - "26656:26656"  # P2P
       - "26657:26657"  # RPC
+      
+      # Optional ports (uncomment if needed)
+      # - "9090:9090"    # gRPC
+      # - "9091:9091"    # gRPC-Web
+      # - "1317:1317"    # REST API
+      # - "8545:8545"    # JSON-RPC HTTP
+      # - "8546:8546"    # JSON-RPC WebSocket
+      # - "26660:26660"  # Prometheus
+      # - "6065:6065"    # EVM Metrics
+      # - "8100:8100"    # Geth Metrics
     
     volumes:
       - ./persistent-data:/home/ubuntu/.infinited

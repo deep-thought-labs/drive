@@ -18,8 +18,20 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/services/node1-infinite-testnet.md for complete port configuration
+      # Required ports
       - "26666:26656"  # P2P
       - "26667:26657"  # RPC
+      
+      # Optional ports (uncomment if needed)
+      # - "9100:9090"    # gRPC
+      # - "9101:9091"    # gRPC-Web
+      # - "1327:1317"    # REST API
+      # - "8555:8545"    # JSON-RPC HTTP
+      # - "8556:8546"    # JSON-RPC WebSocket
+      # - "26670:26660"  # Prometheus
+      # - "6075:6065"    # EVM Metrics
+      # - "8110:8100"    # Geth Metrics
     
     volumes:
       - ./persistent-data:/home/ubuntu/.infinited

@@ -16,8 +16,20 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/services/node3-qom.md for complete port configuration
+      # Required ports
       - "26686:26656"  # P2P
       - "26687:26657"  # RPC
+      
+      # Optional ports (uncomment if needed)
+      # - "9120:9090"    # gRPC
+      # - "9121:9091"    # gRPC-Web
+      # - "1347:1317"    # REST API
+      # - "8575:8545"    # JSON-RPC HTTP
+      # - "8576:8546"    # JSON-RPC WebSocket
+      # - "26690:26660"  # Prometheus
+      # - "6095:6065"    # EVM Metrics
+      # - "8130:8100"    # Geth Metrics
     
     volumes:
       - ./persistent-data:/home/ubuntu/.qomd
