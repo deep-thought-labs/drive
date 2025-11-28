@@ -7,7 +7,7 @@ Essential commands for managing your service containers in Drive using the `driv
 **Recommended for all users:** Each service includes a `drive.sh` script that automatically handles permission configuration. Use it instead of `docker compose` directly:
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Instead of: docker compose up -d
 ./drive.sh up -d
@@ -47,7 +47,7 @@ Each service in Drive has its own directory. Always navigate to the service dire
 
 ```bash
 # Navigate to your service
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ```
 
 ## Start Container
@@ -57,9 +57,9 @@ cd drive/services/infinite-mainnet
 The easiest way to start and manage containers is through the graphical interface:
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for container management (up, down, ps, etc.) and `docker compose exec` for commands inside the container.
@@ -72,7 +72,7 @@ The interface provides visual options for all container operations.
 
 ```bash
 # Navigate to service directory
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Use the wrapper script (automatically handles permissions)
 # If Docker requires sudo, use: sudo ./drive.sh up -d
@@ -89,7 +89,7 @@ cd drive/services/infinite-mainnet
 
 ```bash
 # Navigate to service directory
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Create and start container
 docker compose up -d
@@ -105,7 +105,7 @@ docker compose start
 - `./drive.sh start`: Starts an already-created container that was previously stopped.
 
 **Expected output:**
-- `./drive.sh up -d`: Shows container name and status (e.g., `infinite-mainnet  Started`)
+- `./drive.sh up -d`: Shows container name and status (e.g., `node0-infinite  Started`)
 - `./drive.sh start`: Minimal output, just confirms the container started
 
 **When to use:**
@@ -119,15 +119,15 @@ docker compose start
 ### Using Graphical Interface
 
 ```bash
-cd drive/services/infinite-mainnet
-docker compose exec infinite-mainnet node-ui
+cd drive/services/node0-infinite
+docker compose exec infinite node-ui
 # Select "Node Operations" > "Stop Node"
 ```
 
 ### Using Command Line
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Stop container (keeps it created)
 ./drive.sh stop
@@ -153,13 +153,13 @@ cd drive/services/infinite-mainnet
 ## Container Status
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Check container status
 ./drive.sh ps
 
 # Check specific service (same command, docker-compose filters automatically)
-./drive.sh ps infinite-mainnet
+./drive.sh ps node0-infinite
 ```
 
 **What it does:** Shows the current status of containers managed by docker-compose.
@@ -174,7 +174,7 @@ cd drive/services/infinite-mainnet
 **Example output:**
 ```
 NAME                IMAGE                STATUS       PORTS
-infinite-mainnet    infinite-drive:latest   Up 5 minutes   0.0.0.0:26656->26656/tcp, 0.0.0.0:26657->26657/tcp
+node0-infinite    infinite-drive:latest   Up 5 minutes   0.0.0.0:26656->26656/tcp, 0.0.0.0:26657->26657/tcp
 ```
 
 **Status meanings:**
@@ -188,8 +188,8 @@ infinite-mainnet    infinite-drive:latest   Up 5 minutes   0.0.0.0:26656->26656/
 ## Access Container Shell
 
 ```bash
-cd drive/services/infinite-mainnet
-docker compose exec infinite-mainnet bash
+cd drive/services/node0-infinite
+docker compose exec infinite bash
 ```
 
 **What it does:** Opens an interactive bash shell inside the running container.
@@ -209,14 +209,14 @@ docker compose exec infinite-mainnet bash
 
 **Alternative:** You can also use `sh` if bash is not available:
 ```bash
-docker compose exec infinite-mainnet sh
+docker compose exec infinite sh
 ```
 
 ## Restart Container
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh restart infinite-mainnet
+cd drive/services/node0-infinite
+./drive.sh restart node0-infinite
 ```
 
 **What it does:** Stops and starts the container in one command. This is faster than `stop` + `start`.
@@ -230,19 +230,19 @@ cd drive/services/infinite-mainnet
 ## View Container Logs
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # All logs
-./drive.sh logs infinite-mainnet
+./drive.sh logs node0-infinite
 
 # Follow logs (real-time)
-./drive.sh logs -f infinite-mainnet
+./drive.sh logs -f node0-infinite
 
 # Last N lines
-./drive.sh logs --tail=100 infinite-mainnet
+./drive.sh logs --tail=100 node0-infinite
 
 # Last N lines and follow
-./drive.sh logs --tail=100 -f infinite-mainnet
+./drive.sh logs --tail=100 -f node0-infinite
 ```
 
 **What it does:** Displays logs from the container itself (Docker logs), which may differ from node logs.
@@ -267,7 +267,7 @@ cd drive/services/infinite-mainnet
 **⚠️ Warning:** These commands can delete data. Use with caution.
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Remove container (keeps volumes/data)
 ./drive.sh down
@@ -312,7 +312,7 @@ The `docker-compose.yml` file now supports custom user IDs through environment v
 
 **Option 0: Use the wrapper script (easiest - recommended)**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Use the wrapper script instead of docker-compose directly
 # It automatically configures permissions and works with or without sudo
@@ -342,7 +342,7 @@ sudo usermod -aG docker $USER
 
 **Option 1: Set environment variables (works with or without sudo)**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # This automatically detects your real user ID, even when using sudo
 export PUID=${SUDO_UID:-$(id -u)}
@@ -357,7 +357,7 @@ sudo ./drive.sh up -d
 
 **Option 2: Set inline when starting (not needed with drive.sh)**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # drive.sh handles this automatically, but if using docker compose directly:
 # Without sudo
@@ -399,7 +399,7 @@ After setting these variables, restart the container:
 **Verification:**
 ```bash
 # Check what UID/GID the container is using
-docker compose exec infinite-mainnet id
+docker compose exec infinite id
 
 # Should match your host user ID
 id
@@ -419,7 +419,7 @@ sudo chown -R ${SUDO_UID:-$(id -u)}:${SUDO_GID:-$(id -g)} ./persistent-data
 **Note:** In Drive, services use pre-built images from Docker Hub. Rebuilding is typically only needed if you're developing custom images.
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Rebuild image
 ./drive.sh build
@@ -448,12 +448,12 @@ Each service in Drive is independent. You can manage them separately:
 
 ```bash
 # Service 1: Mainnet
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 
 # Service 2: Testnet (in another terminal)
-cd drive/services/infinite-testnet
+cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
 docker compose exec infinite-testnet node-ui
 ```

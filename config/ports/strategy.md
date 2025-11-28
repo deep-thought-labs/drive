@@ -79,9 +79,10 @@ This simple formula ensures:
 
 Each preconfigured service has its own detailed configuration file with complete port mappings, Docker Compose examples, and firewall configurations:
 
-- **[mainnet.md](./services/mainnet.md)** - Service #0: Infinite Mainnet
-- **[testnet.md](./services/testnet.md)** - Service #1: Infinite Testnet
-- **[creative.md](./services/creative.md)** - Service #2: Creative Network
+- **[node0-infinite.md](./services/node0-infinite.md)** - Service #0: Infinite Mainnet
+- **[node1-infinite-testnet.md](./services/node1-infinite-testnet.md)** - Service #1: Infinite Testnet
+- **[node2-infinite-creative.md](./services/node2-infinite-creative.md)** - Service #2: Creative Network
+- **[node3-qom.md](./services/node3-qom.md)** - Service #3: QOM Network
 
 For detailed descriptions of what each port type does, see **[reference.md](./reference.md)**.
 
@@ -176,7 +177,8 @@ ports:
 ## See Also
 
 - **[reference.md](./reference.md)** - Detailed descriptions of all port types
-- **[services/mainnet.md](./services/mainnet.md)** - Mainnet port configuration
-- **[services/testnet.md](./services/testnet.md)** - Testnet port configuration
-- **[services/creative.md](./services/creative.md)** - Creative Network port configuration
+- **[services/node0-infinite.md](./services/node0-infinite.md)** - Mainnet port configuration
+- **[services/node1-infinite-testnet.md](./services/node1-infinite-testnet.md)** - Testnet port configuration
+- **[services/node2-infinite-creative.md](./services/node2-infinite-creative.md)** - Creative Network port configuration
+- **[services/node3-qom.md](./services/node3-qom.md)** - QOM Network port configuration
 - **[../environment/reference.md](../environment/reference.md)** - Environment variables reference

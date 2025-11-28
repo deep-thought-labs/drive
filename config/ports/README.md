@@ -10,9 +10,10 @@ This directory contains all port configuration documentation and service-specifi
 
 ## Service-Specific Configurations
 
-- **[mainnet.md](./services/mainnet.md)** - Infinite Mainnet (Service #0)
-- **[testnet.md](./services/testnet.md)** - Infinite Testnet (Service #1)
-- **[creative.md](./services/creative.md)** - Creative Network (Service #2)
+- **[node0-infinite.md](./services/node0-infinite.md)** - Infinite Mainnet (Service #0)
+- **[node1-infinite-testnet.md](./services/node1-infinite-testnet.md)** - Infinite Testnet (Service #1)
+- **[node2-infinite-creative.md](./services/node2-infinite-creative.md)** - Creative Network (Service #2)
+- **[node3-qom.md](./services/node3-qom.md)** - QOM Network (Service #3)
 
 ## Quick Start
 

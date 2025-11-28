@@ -1,12 +1,12 @@
 services:
-  qom-node:
+  qom:
     # Core service settings (build, name, user, restart) - QOM blockchain node
     # This builds the image locally from the Dockerfile in dev/ directory
     build:
       context: ../../../dev
       dockerfile: Dockerfile
     image: infinite-drive:qom
-    container_name: qom-node
+    container_name: qom
     restart: unless-stopped
 
     ##################################################################################
@@ -16,8 +16,8 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
-      - "26666:26656"  # P2P
-      - "26667:26657"  # RPC
+      - "26686:26656"  # P2P
+      - "26687:26657"  # RPC
     
     volumes:
       - ./persistent-data:/home/ubuntu/.qomd
@@ -53,6 +53,6 @@ services:
       NODE_ALT_HOME: "/home/ubuntu/.qomd"
 
     ### End environment variables
-  ### End service qom-node
+  ### End service qom
 ### End docker-compose.yml
 

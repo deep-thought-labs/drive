@@ -64,11 +64,11 @@ Drive organizes services in the following structure:
 ```
 drive/
 └── services/
-    ├── infinite-mainnet/     # Mainnet blockchain node
+    ├── node0-infinite/     # Mainnet blockchain node
     │   ├── docker-compose.yml
     │   ├── drive.sh          # Container management wrapper (recommended)
     │   └── persistent-data/  # Service data (git-ignored)
-    └── infinite-testnet/     # Testnet blockchain node
+    └── node1-infinite-testnet/     # Testnet blockchain node
         ├── docker-compose.yml
         ├── drive.sh
         └── persistent-data/  # Service data (git-ignored)
@@ -86,21 +86,21 @@ Each service is completely independent with its own:
 
 **Start a service:**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 ```
 
 **Stop a service:**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh stop
 ```
 
 **View logs:**
 ```bash
-cd drive/services/infinite-mainnet
-docker compose exec infinite-mainnet node-logs
+cd drive/services/node0-infinite
+docker compose exec infinite node-logs
 ```
 
 **Note:** Use `./drive.sh` for container management commands (up, down, stop, ps, etc.) to automatically handle permissions. Use `docker compose exec` for commands inside the container.
@@ -110,9 +110,9 @@ docker compose exec infinite-mainnet node-logs
 The graphical interface (`node-ui`) is the **recommended method** for all operations:
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` to start the container (automatically handles permissions), then use `docker compose exec` to access the interface.

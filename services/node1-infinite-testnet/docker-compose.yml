@@ -1,16 +1,15 @@
 services:
-  infinite-mainnet:
-    # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:latest
-    container_name: infinite-mainnet
-    # User configuration: Uses environment variables PUID and PGID if set, otherwise defaults to 1000:1000
-    # To fix permission issues, set these before running docker-compose:
-    #   Without sudo: export PUID=$(id -u) && export PGID=$(id -g)
-    #   With sudo:    export PUID=${SUDO_UID:-$(id -u)} && export PGID=${SUDO_GID:-$(id -g)}
-    # Or run inline: PUID=$(id -u) PGID=$(id -g) docker-compose up -d
-    # Note: Works with or without sudo - if using sudo, it will use SUDO_UID/SUDO_GID automatically
-    user: "${PUID:-1000}:${PGID:-1000}"
+  infinite-testnet:
+    # Core service settings (build, name, user, restart) - Testing with local build
+    # This builds the image locally from the Dockerfile in dev/ directory
+    # Build context: From services/node1-infinite-testnet/, go up three levels (../../../) to project root, then into dev/
+    build:
+      context: ../../../dev
+      dockerfile: Dockerfile
+    image: infinite-drive:testnet-local
+    container_name: infinite-testnet
     restart: unless-stopped
+    # Note: Container runs as user 1000:1000 (set in Dockerfile), no need for user: directive
 
     ##################################################################################
     #                       Editable Section Starts Here                             #
@@ -19,8 +18,8 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
-      - "26656:26656"  # P2P
-      - "26657:26657"  # RPC
+      - "26666:26656"  # P2P
+      - "26667:26657"  # RPC
     
     volumes:
       - ./persistent-data:/home/ubuntu/.infinited
@@ -32,17 +31,18 @@ services:
       ##################################################################################
       #                           Chain Identification                                 #
       ##################################################################################
-      NODE_CHAIN_ID: "infinite_421018-1"
-      NODE_EVM_CHAIN_ID: "421018"
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/infinite/migration/assets/pre-mainet-genesis.json"
+      NODE_CHAIN_ID: "infinite_421018001-1"
+      NODE_EVM_CHAIN_ID: "421018001"
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/refs/heads/main/services/node1-infinite-testnet/genesis.json"
 
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
-      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656"
+      NODE_P2P_SEEDS: "88ec87026e7b61eceeca0d74cf47a24cea36642b@66.70.178.128:26666"
       # NODE_PERSISTENT_PEERS: ""
       # NODE_P2P_EXTERNAL_ADDRESS: "" 
 
     ### End environment variables
-  ### End service infinite-mainnet
+  ### End service infinite-testnet
 ### End docker-compose.yml
+

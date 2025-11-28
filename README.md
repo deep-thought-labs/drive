@@ -48,9 +48,9 @@ cd drive
 The easiest way to manage your node is through the built-in graphical interface:
 
 ```bash
-cd services/infinite-mainnet
+cd services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 ```
 
 **Note:** 
@@ -66,10 +66,10 @@ The graphical interface provides visual menus for all operations - no command me
 ### Command Line (Advanced)
 
 ```bash
-cd services/infinite-mainnet
+cd services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-init
-docker compose exec infinite-mainnet node-start
+docker compose exec infinite node-init
+docker compose exec infinite node-start
 ```
 
 **Why use `./drive.sh`?** It automatically configures correct user permissions, preventing volume permission errors. See [Container Management](docs/container-management.md) for details.
@@ -81,11 +81,11 @@ docker compose exec infinite-mainnet node-start
 ```
 drive/
 ├── services/                    # Service definitions
-│   ├── infinite-mainnet/        # Infinite Mainnet blockchain node
+│   ├── node0-infinite/          # Infinite Mainnet blockchain node
 │   │   ├── docker-compose.yml  # Service configuration
 │   │   ├── drive.sh            # Container management wrapper (recommended)
 │   │   └── persistent-data/    # Persistent blockchain data (git-ignored)
-│   ├── infinite-testnet/       # Infinite Testnet blockchain node
+│   ├── node1-infinite-testnet/ # Infinite Testnet blockchain node
 │   │   ├── docker-compose.yml
 │   │   ├── drive.sh
 │   │   └── persistent-data/
@@ -102,13 +102,13 @@ drive/
 
 Full blockchain node for **Infinite Improbability Chain** mainnet network.
 
-**Location:** `drive/services/infinite-mainnet/`
+**Location:** `drive/services/node0-infinite/`
 
 **Quick Commands:**
 ```bash
-cd services/infinite-mainnet
+cd services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite-mainnet node-ui
+docker compose exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
@@ -117,7 +117,7 @@ docker compose exec infinite-mainnet node-ui
 
 Full blockchain node for **Infinite Improbability Chain** testnet network.
 
-**Location:** `drive/services/infinite-testnet/`
+**Location:** `drive/services/node1-infinite-testnet/`
 
 **Note:** Uses different environment variables (chain ID, genesis URL, etc.) configured in its `docker-compose.yml` to connect to the testnet network.
 
@@ -145,11 +145,11 @@ Each service is completely independent. Run multiple services simultaneously:
 
 ```bash
 # Mainnet node
-cd services/infinite-mainnet
+cd services/node0-infinite
 ./drive.sh up -d
 
 # Testnet node (in another terminal)
-cd services/infinite-testnet
+cd services/node1-infinite-testnet
 ./drive.sh up -d
 ```
 

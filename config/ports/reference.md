@@ -303,5 +303,5 @@ This endpoint can expose sensitive information about your application's internal
 ## See Also
 
 - [strategy.md](./strategy.md) - Port allocation strategy and service configuration
-- [services/](./services/) - Service-specific port files (e.g., `mainnet.md`)
+- [services/](./services/) - Service-specific port files (e.g., `node0-infinite.md`)
 

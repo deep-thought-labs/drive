@@ -95,11 +95,11 @@ You can run both testnet and mainnet nodes at the same time:
 
 ```bash
 # Terminal 1: Mainnet
-cd services/infinite-mainnet
+cd services/node0-infinite
 ./drive.sh up -d
 
 # Terminal 2: Testnet
-cd services/infinite-testnet
+cd services/node1-node1-infinite-testnet
 ./drive.sh up -d
 ```
 

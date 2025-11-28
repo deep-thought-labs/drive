@@ -5,7 +5,11 @@ This directory contains environment variables documentation and service-specific
 ## Structure
 
 - **[reference.md](./reference.md)** - Complete environment variables reference
-- **[services/](./services/)** - Service-specific environment variable configurations (future)
+- **[services/](./services/)** - Service-specific environment variable configurations
+  - [node0-infinite.md](./services/node0-infinite.md) - Infinite Mainnet (Service #0)
+  - [node1-infinite-testnet.md](./services/node1-infinite-testnet.md) - Infinite Testnet (Service #1)
+  - [node2-infinite-creative.md](./services/node2-infinite-creative.md) - Creative Network (Service #2)
+  - [node3-qom.md](./services/node3-qom.md) - QOM Network (Service #3)
 
 ## Quick Start
 

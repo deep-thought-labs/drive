@@ -1,4 +1,4 @@
-# Environment Variables: Creative Network
+# Environment Variables: Infinite Creative Network
 
 **Service Number:** 2  
 **Service Name:** `infinite-creative`

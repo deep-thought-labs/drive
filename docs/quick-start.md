@@ -105,12 +105,12 @@ Drive organizes services in separate directories. Each service is independent an
 
 ```bash
 # Navigate to the Infinite Mainnet service
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ```
 
 **Available Services:**
-- `infinite-mainnet/` - Mainnet blockchain node
-- `infinite-testnet/` - Testnet blockchain node
+- `node0-infinite/` - Mainnet blockchain node
+- `node1-infinite-testnet/` - Testnet blockchain node
 
 ## Step 2: Start the Container
 
@@ -178,7 +178,7 @@ The **easiest and recommended way** to manage your node is through the built-in 
 ./drive.sh up -d
 
 # Open the graphical interface
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
@@ -198,7 +198,7 @@ The graphical interface provides:
 **⚠️ IMPORTANT:** Complete these steps in order:
 
 1. **Ensure container is running:** `./drive.sh up -d`
-2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
+2. **Open the interface:** `./drive.sh exec infinite node-ui`
 3. **Navigate to "Key Management"** → **"Generate Key (Dry-Run - Recommended)"**
 4. **Create your key:**
    - Enter a name for your key (e.g., `my-validator`)
@@ -216,7 +216,7 @@ The graphical interface provides:
 #### For Simple Nodes (No Validator)
 
 1. **Ensure container is running:** `./drive.sh up -d`
-2. **Open the interface:** `./drive.sh exec infinite-mainnet node-ui`
+2. **Open the interface:** `./drive.sh exec infinite node-ui`
 3. **Navigate to "Advanced Operations"** → **"Initialize Node (Simple)"**
 3. **Follow the interactive prompts:**
    - Enter a moniker (node name) when requested
@@ -247,13 +247,13 @@ If you prefer command-line operations or need to automate tasks, you can use dir
 
 1. **Start the container (if not running):**
    ```bash
-   cd drive/services/infinite-mainnet
+   cd drive/services/node0-infinite
    ./drive.sh up -d
    ```
 
 2. **Create your key (REQUIRED FIRST STEP):**
    ```bash
-   ./drive.sh exec infinite-mainnet node-keys create my-validator --dry-run
+   ./drive.sh exec infinite node-keys create my-validator --dry-run
    ```
    
    **What happens:**
@@ -272,7 +272,7 @@ If you prefer command-line operations or need to automate tasks, you can use dir
 
 4. **Initialize with recovery (use your seed phrase):**
    ```bash
-   ./drive.sh exec -it infinite-mainnet node-init --recover
+   ./drive.sh exec -it node0-infinite node-init --recover
    ```
    
    **What happens:**
@@ -282,7 +282,7 @@ If you prefer command-line operations or need to automate tasks, you can use dir
    
 5. **(Optional) Add key to keyring for later use:**
    ```bash
-   ./drive.sh exec -it infinite-mainnet node-keys add my-validator
+   ./drive.sh exec -it node0-infinite node-keys add my-validator
    ```
    Enter your seed phrase when prompted to add it to the keyring.
 
@@ -297,11 +297,11 @@ If you prefer command-line operations or need to automate tasks, you can use dir
 **If you're NOT running a validator**, you can proceed directly with simple initialization:
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 # Start the container first (if not running)
 ./drive.sh up -d
 # Initialize the node
-./drive.sh exec infinite-mainnet node-init
+./drive.sh exec infinite node-init
 ```
 
 **What it does:** Creates a new node with default configuration. Generates random keys automatically (not displayed). Suitable for full nodes that won't act as validators.
@@ -314,14 +314,14 @@ cd drive/services/infinite-mainnet
 # Ensure container is running
 ./drive.sh up -d
 # Start the node
-./drive.sh exec infinite-mainnet node-start
+./drive.sh exec infinite node-start
 ```
 
 ### Verify Status
 
 ```bash
 # Check node process status
-./drive.sh exec infinite-mainnet node-process-status
+./drive.sh exec infinite node-process-status
 ```
 
 ## Working with Multiple Services
@@ -330,12 +330,12 @@ You can run multiple services simultaneously. Each service is completely indepen
 
 ```bash
 # Terminal 1: Mainnet node
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 
 # Terminal 2: Testnet node
-cd drive/services/infinite-testnet
+cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
 ./drive.sh exec infinite-testnet node-ui
 ```
@@ -359,9 +359,9 @@ Each service has:
 ### Using the Graphical Interface (Easiest)
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
@@ -369,11 +369,11 @@ cd drive/services/infinite-mainnet
 ### Using Command Line (Advanced)
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-init
-./drive.sh exec infinite-mainnet node-start
-./drive.sh exec infinite-mainnet node-process-status
+./drive.sh exec infinite node-init
+./drive.sh exec infinite node-start
+./drive.sh exec infinite node-process-status
 ```
 
 **Note:** Use `./drive.sh` for all commands to automatically handle permissions and ensure consistency.

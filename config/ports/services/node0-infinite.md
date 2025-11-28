@@ -1,8 +1,8 @@
 # Port Configuration: Infinite Mainnet
 
 **Service Number:** 0  
-**Service Name:** `infinite-mainnet`  
-**Container Name:** `infinite-mainnet`
+**Service Name:** `infinite`  
+**Container Name:** `infinite`
 
 This document contains the complete port configuration for the Infinite Mainnet service. All ports are calculated using the standard formula: `Host Port = Default Port + (Service Number × 10)`.
 
@@ -75,7 +75,7 @@ These ports can be enabled if needed for specific use cases:
 
 ```yaml
 services:
-  infinite-mainnet:
+  infinite:
     ports:
       - "26656:26656"  # P2P (required)
       - "26657:26657"  # RPC (required)
@@ -85,7 +85,7 @@ services:
 
 ```yaml
 services:
-  infinite-mainnet:
+  infinite:
     ports:
       # Required ports
       - "26656:26656"  # P2P

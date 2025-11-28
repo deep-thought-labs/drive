@@ -1,13 +1,12 @@
 services:
-  infinite-testnet:
-    # Core service settings (build, name, user, restart) - Testing with local build
+  infinite-creative:
+    # Core service settings (build, name, user, restart) - Creative Network blockchain node
     # This builds the image locally from the Dockerfile in dev/ directory
-    # Build context: From services/infinite-testnet/, go up three levels (../../../) to project root, then into dev/
     build:
       context: ../../../dev
       dockerfile: Dockerfile
-    image: infinite-drive:testnet-local
-    container_name: infinite-testnet
+    image: infinite-drive:creative-local
+    container_name: infinite-creative
     restart: unless-stopped
     # Note: Container runs as user 1000:1000 (set in Dockerfile), no need for user: directive
 
@@ -18,8 +17,8 @@ services:
 
     ports:
       # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
-      - "26666:26656"  # P2P
-      - "26667:26657"  # RPC
+      - "26676:26656"  # P2P
+      - "26677:26657"  # RPC
     
     volumes:
       - ./persistent-data:/home/ubuntu/.infinited
@@ -31,18 +30,18 @@ services:
       ##################################################################################
       #                           Chain Identification                                 #
       ##################################################################################
-      NODE_CHAIN_ID: "infinite_421018001-1"
-      NODE_EVM_CHAIN_ID: "421018001"
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/refs/heads/main/services/infinite-testnet/genesis.json"
+      NODE_CHAIN_ID: "infinite_421018002-1"
+      NODE_EVM_CHAIN_ID: "421018002"
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/refs/heads/main/services/node2-infinite-creative/genesis.json"
 
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
-      NODE_P2P_SEEDS: "88ec87026e7b61eceeca0d74cf47a24cea36642b@66.70.178.128:26666"
+      NODE_P2P_SEEDS: ""
       # NODE_PERSISTENT_PEERS: ""
       # NODE_P2P_EXTERNAL_ADDRESS: "" 
 
     ### End environment variables
-  ### End service infinite-testnet
+  ### End service infinite-creative
 ### End docker-compose.yml
 
