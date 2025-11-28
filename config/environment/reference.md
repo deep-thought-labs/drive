@@ -275,20 +275,28 @@ These flags control whether optional arguments are included in the node start co
 
 **Examples:**
 ```yaml
-# Auto-detect (default) - recommended
+# Recommended: Omit the variable entirely (auto-detection)
+# The system will automatically detect based on binary name:
+# - infinited or infinite* → true (enabled)
+# - Other binaries (qomd, etc.) → false (disabled)
+
+# Or explicitly set to auto (same as omitting)
 NODE_FLAG_EVM_CHAIN_ID_ENABLED: "auto"
 
-# Force enable (for Infinite)
+# Force enable (only if you need to override auto-detection)
 NODE_FLAG_EVM_CHAIN_ID_ENABLED: "true"
 
-# Force disable (for QOM or other binaries that don't support it)
+# Force disable (only if you need to override auto-detection)
 NODE_FLAG_EVM_CHAIN_ID_ENABLED: "false"
 ```
 
 **Note:** 
+- **This variable is optional** - if not specified, the system automatically detects the correct value based on the binary name
+- **Recommended approach:** Omit this variable from `docker-compose.yml` to keep files clean and let the system auto-detect
 - The `--evm.evm-chain-id` argument is only supported by `infinited` (Infinite blockchain)
 - It is NOT supported by `qomd` (QOM blockchain) or other binaries
-- If you set this to `true` for a binary that doesn't support it, the node may fail to start or ignore the argument
+- Auto-detection: `infinited` or binaries starting with `infinite*` → `true`, all others → `false`
+- Only set this variable if you need to override the auto-detection behavior
 
 ---
 

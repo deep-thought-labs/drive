@@ -46,11 +46,6 @@ services:
       NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/babelfish-vm/main/resources/genesis.json"
 
       ##################################################################################
-      #                    Conditional Argument Flags                                 #
-      ##################################################################################
-      NODE_FLAG_EVM_CHAIN_ID_ENABLED: "false"
-
-      ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
       NODE_P2P_SEEDS: "7768864af4003165c10b77802a673006f98d54c6@p2p.foxxone.one:26656"
