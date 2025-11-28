@@ -1,248 +1,95 @@
-# Port Allocation Reference
+# Port Allocation Strategy
 
-Complete reference for port allocation across all blockchain node services. This document helps avoid port conflicts when running multiple services simultaneously.
+This document explains the port allocation strategy and logic for running multiple services simultaneously on the same host. For detailed port descriptions and service-specific configurations, see the related documents.
 
 ## Table of Contents
 
+- [Understanding Port Mapping](#understanding-port-mapping)
 - [Port Allocation Strategy](#port-allocation-strategy)
-- [Service Port Mappings](#service-port-mappings)
-- [Internal Container Ports](#internal-container-ports)
+- [Service-Specific Configurations](#service-specific-configurations)
 - [Port Conflict Resolution](#port-conflict-resolution)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Understanding Port Mapping
+
+When configuring ports in `docker-compose.yml`, you'll see entries like this:
+
+```yaml
+ports:
+  - "26656:26656"  # P2P
+  - "26657:26657"  # RPC
+```
+
+### How Port Mapping Works
+
+The format is: `"HOST_PORT:CONTAINER_PORT"`
+
+- **Left number (HOST_PORT)**: This is the port on your computer/host system. **This is the one you can change** and **must be different** for each service running on your system. This is what you'll use to access the service from your host.
+
+- **Right number (CONTAINER_PORT)**: This is the port **inside the Docker container**. **Never change this value** - it's what the service software expects and is configured in the service's internal settings. This value is fixed and recognized by the service's configuration.
+
+### Why Different Host Ports?
+
+If you want to run multiple services on the same computer, each one needs different host ports to avoid conflicts. The container ports stay the same (because the software inside expects those specific ports), but you map them to different host ports.
+
+**Example:**
+- Service 1: `"26656:26656"` - Uses host port 26656
+- Service 2: `"26666:26656"` - Uses host port 26666 (different!), but container still uses 26656 internally
+
+This way, both services can run simultaneously without conflicts!
 
 ---
 
 ## Port Allocation Strategy
 
-Ports are allocated using a **+10 offset strategy** to allow running multiple networks simultaneously on the same host:
+### Service Numbering
 
-- **Mainnet**: Standard ports (26656, 26657)
-- **Testnet**: +10 offset (26666, 26667)
-- **Other networks**: +20 or higher offsets (26676, 26677, etc.)
+Each service is assigned a **Service Number** starting from 0:
 
-### Port Ranges
+- **Service #0** = Mainnet (uses standard ports)
+- **Service #1** = Testnet
+- **Service #2** = Creative Network
+- **Service #3** = Custom Network 1
+- **Service #4** = Custom Network 2
+- And so on...
 
-| Network Type | P2P Port (Host) | RPC Port (Host) | Internal P2P | Internal RPC |
-|--------------|-----------------|-----------------|--------------|--------------|
-| Mainnet      | 26656           | 26657           | 26656        | 26657        |
-| Testnet      | 26666           | 26667           | 26656        | 26657        |
-| Custom       | 26676+          | 26677+          | 26656        | 26657        |
+### Port Calculation Formula
 
-**Note:** Internal container ports are always fixed (26656 for P2P, 26657 for RPC) regardless of the host port mapping.
+For each port type, calculate the host port using:
 
----
+**Host Port = Default Port + (Service Number × 10)**
 
-## Service Port Mappings
+**Example:**
+- P2P default port is 26656
+- Service #0 (Mainnet): 26656 + (0 × 10) = **26656**
+- Service #1 (Testnet): 26656 + (1 × 10) = **26666**
+- Service #2 (Creative): 26656 + (2 × 10) = **26676**
 
-### Infinite Mainnet
-
-**Service Name:** `infinite-mainnet`  
-**Container Name:** `infinite-mainnet`
-
-| Port Type | Host Port | Container Port | Description |
-|-----------|-----------|---------------|-------------|
-| P2P       | 26656     | 26656         | Peer-to-peer network communication |
-| RPC       | 26657     | 26657         | RPC API access |
-
-**docker-compose.yml example:**
-```yaml
-ports:
-  - "26656:26656"  # P2P
-  - "26657:26657"  # RPC
-```
+This simple formula ensures:
+- ✅ No port conflicts between services
+- ✅ Easy to remember and calculate
+- ✅ Consistent across all port types
+- ✅ Supports up to 10+ services without issues
 
 ---
 
-### Infinite Testnet
+## Service-Specific Configurations
 
-**Service Name:** `infinite-testnet`  
-**Container Name:** `infinite-testnet`
+Each preconfigured service has its own detailed configuration file with complete port mappings, Docker Compose examples, and firewall configurations:
 
-| Port Type | Host Port | Container Port | Description |
-|-----------|-----------|---------------|-------------|
-| P2P       | 26666     | 26656         | Peer-to-peer network communication |
-| RPC       | 26667     | 26657         | RPC API access |
+- **[PORTS.0-infinite-mainnet.md](./PORTS.0-infinite-mainnet.md)** - Service #0: Infinite Mainnet
+- **[PORTS.1-infinite-testnet.md](./PORTS.1-infinite-testnet.md)** - Service #1: Infinite Testnet
+- **[PORTS.2-infinite-creative.md](./PORTS.2-infinite-creative.md)** - Service #2: Creative Network
 
-**docker-compose.yml example:**
-```yaml
-ports:
-  - "26666:26656"  # P2P
-  - "26667:26657"  # RPC
-```
-
-**Why different host ports?** Allows running both mainnet and testnet simultaneously without conflicts.
-
----
-
-### QOM Network
-
-**Service Name:** `qom-node`  
-**Container Name:** `qom-node`
-
-| Port Type | Host Port | Container Port | Description |
-|-----------|-----------|---------------|-------------|
-| P2P       | 26666     | 26656         | Peer-to-peer network communication |
-| RPC       | 26667     | 26657         | RPC API access |
-
-**docker-compose.yml example:**
-```yaml
-ports:
-  - "26666:26656"  # P2P
-  - "26667:26657"  # RPC
-```
-
-**Note:** QOM uses the same host ports as Infinite Testnet. If you need to run both simultaneously, change QOM's ports to 26676:26656 and 26677:26657.
-
----
-
-## Internal Container Ports
-
-**Important:** Internal container ports are **fixed** and should **never be changed**. These are hardcoded in the blockchain binaries.
-
-| Port | Service | Description |
-|------|---------|-------------|
-| 26656 | P2P     | Peer-to-peer network communication (always) |
-| 26657 | RPC     | RPC API access (always) |
-
-**Why fixed?** The blockchain binaries are compiled with these ports hardcoded. Changing them would require recompiling the binary.
+For detailed descriptions of what each port type does, see **[PORTS_REFERENCE.md](./PORTS_REFERENCE.md)**.
 
 ---
 
 ## Port Conflict Resolution
 
-### Scenario 1: Running Mainnet and Testnet Simultaneously
-
-**Solution:** Use different host ports (already configured)
-
-```yaml
-# Mainnet
-ports:
-  - "26656:26656"  # P2P
-  - "26657:26657"  # RPC
-
-# Testnet
-ports:
-  - "26666:26656"  # P2P (different host port)
-  - "26667:26657"  # RPC (different host port)
-```
-
-✅ **No conflicts** - Different host ports, same container ports
-
----
-
-### Scenario 2: Running Multiple Custom Networks
-
-**Solution:** Use incremental +10 offsets
-
-```yaml
-# Network 1
-ports:
-  - "26656:26656"  # P2P
-  - "26657:26657"  # RPC
-
-# Network 2
-ports:
-  - "26666:26656"  # P2P (+10)
-  - "26667:26657"  # RPC (+10)
-
-# Network 3
-ports:
-  - "26676:26656"  # P2P (+20)
-  - "26677:26657"  # RPC (+20)
-
-# Network 4
-ports:
-  - "26686:26656"  # P2P (+30)
-  - "26687:26657"  # RPC (+30)
-```
-
----
-
-### Scenario 3: Port Already in Use
-
-**Error:** `Error: bind: address already in use`
-
-**Solution:** Change the host port in `docker-compose.yml`
-
-```yaml
-# Original (conflict)
-ports:
-  - "26656:26656"
-
-# Changed to available port
-ports:
-  - "26666:26656"  # Changed host port, container port stays the same
-```
-
-**Check available ports:**
-```bash
-# Check if port is in use
-netstat -tuln | grep 26656
-# or
-ss -tuln | grep 26656
-```
-
----
-
-## Port Allocation Guidelines
-
-### Recommended Port Ranges
-
-| Network Type | Recommended Host Port Range |
-|--------------|------------------------------|
-| Mainnet      | 26656-26665 (P2P), 26657-26666 (RPC) |
-| Testnet      | 26666-26675 (P2P), 26667-26676 (RPC) |
-| Development  | 26676-26685 (P2P), 26677-26686 (RPC) |
-| Custom       | 26686+ (P2P), 26687+ (RPC) |
-
-### Port Selection Rules
-
-1. **Always use +10 increments** for different networks
-2. **Keep container ports fixed** (26656, 26657)
-3. **Check for conflicts** before assigning new ports
-4. **Document custom ports** in your service's README
-
----
-
-## Quick Reference Table
-
-| Service | Host P2P | Host RPC | Container P2P | Container RPC |
-|---------|----------|----------|---------------|---------------|
-| infinite-mainnet | 26656 | 26657 | 26656 | 26657 |
-| infinite-testnet | 26666 | 26667 | 26656 | 26657 |
-| qom-node | 26666 | 26667 | 26656 | 26657 |
-
-**Note:** If running QOM and Infinite Testnet simultaneously, change QOM to 26676:26656 and 26677:26657.
-
----
-
-## Firewall Configuration
-
-If you're running a validator or want to accept incoming P2P connections, ensure these ports are open in your firewall:
-
-### For Mainnet
-```bash
-# UFW (Ubuntu)
-sudo ufw allow 26656/tcp  # P2P
-sudo ufw allow 26657/tcp  # RPC (optional, only if exposing RPC)
-
-# firewalld (CentOS/RHEL)
-sudo firewall-cmd --permanent --add-port=26656/tcp
-sudo firewall-cmd --permanent --add-port=26657/tcp
-sudo firewall-cmd --reload
-```
-
-### For Testnet
-```bash
-# UFW (Ubuntu)
-sudo ufw allow 26666/tcp  # P2P
-sudo ufw allow 26667/tcp  # RPC (optional)
-```
-
----
-
-## Troubleshooting
-
-### Port Already in Use
+### Scenario 1: Port Already in Use
 
 **Error:**
 ```
@@ -251,26 +98,60 @@ Error: bind: address already in use
 
 **Solution:**
 1. Find what's using the port: `sudo lsof -i :26656` or `sudo netstat -tulpn | grep 26656`
-2. Change the host port in `docker-compose.yml`
+2. Change the host port in `docker-compose.yml` to the next available service number
 3. Restart the service
+
+**Example:**
+If port 26656 is already in use, use Service #1 ports instead:
+```yaml
+ports:
+  - "26666:26656"  # Changed host port, container port stays the same
+```
 
 ---
 
-### Cannot Connect to P2P Network
+### Scenario 2: Running Multiple Services Simultaneously
+
+**Solution:** Each service must use a different Service Number
+
+```yaml
+# Service #0 (Mainnet)
+ports:
+  - "26656:26656"  # P2P
+  - "26657:26657"  # RPC
+
+# Service #1 (Testnet)
+ports:
+  - "26666:26656"  # P2P (different host port)
+  - "26667:26657"  # RPC (different host port)
+
+# Service #2 (Creative)
+ports:
+  - "26676:26656"  # P2P (different host port)
+  - "26677:26657"  # RPC (different host port)
+```
+
+✅ **No conflicts** - Different host ports, same container ports
+
+---
+
+## Troubleshooting
+
+### Cannot Connect to Service
 
 **Symptoms:**
-- Node shows 0 peers
-- Cannot sync blocks
+- Service shows connection errors
+- Cannot establish network connections
 
 **Possible Causes:**
-1. Firewall blocking P2P port
+1. Firewall blocking required port
 2. Wrong port mapping in `docker-compose.yml`
 3. NAT/firewall not configured for external address
 
 **Solution:**
-1. Check firewall: `sudo ufw status` or `sudo firewall-cmd --list-ports`
+1. Check firewall: `sudo ufw status`
 2. Verify port mapping: `docker compose ps` or `docker ps`
-3. Configure `NODE_P2P_EXTERNAL_ADDRESS` if behind NAT
+3. For blockchain nodes: Configure `NODE_P2P_EXTERNAL_ADDRESS` if behind NAT
 
 ---
 
@@ -294,6 +175,8 @@ Error: bind: address already in use
 
 ## See Also
 
-- [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) - Environment variables reference
-- Service-specific README files in each service directory
-
+- **[PORTS_REFERENCE.md](./PORTS_REFERENCE.md)** - Detailed descriptions of all port types
+- **[PORTS.0-infinite-mainnet.md](./PORTS.0-infinite-mainnet.md)** - Mainnet port configuration
+- **[PORTS.1-infinite-testnet.md](./PORTS.1-infinite-testnet.md)** - Testnet port configuration
+- **[PORTS.2-infinite-creative.md](./PORTS.2-infinite-creative.md)** - Creative Network port configuration
+- **[ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)** - Environment variables reference
