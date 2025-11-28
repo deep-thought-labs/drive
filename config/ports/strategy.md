@@ -79,11 +79,11 @@ This simple formula ensures:
 
 Each preconfigured service has its own detailed configuration file with complete port mappings, Docker Compose examples, and firewall configurations:
 
-- **[PORTS.0-infinite-mainnet.md](./PORTS.0-infinite-mainnet.md)** - Service #0: Infinite Mainnet
-- **[PORTS.1-infinite-testnet.md](./PORTS.1-infinite-testnet.md)** - Service #1: Infinite Testnet
-- **[PORTS.2-infinite-creative.md](./PORTS.2-infinite-creative.md)** - Service #2: Creative Network
+- **[mainnet.md](./services/mainnet.md)** - Service #0: Infinite Mainnet
+- **[testnet.md](./services/testnet.md)** - Service #1: Infinite Testnet
+- **[creative.md](./services/creative.md)** - Service #2: Creative Network
 
-For detailed descriptions of what each port type does, see **[PORTS_REFERENCE.md](./PORTS_REFERENCE.md)**.
+For detailed descriptions of what each port type does, see **[reference.md](./reference.md)**.
 
 ---
 
@@ -175,8 +175,8 @@ ports:
 
 ## See Also
 
-- **[PORTS_REFERENCE.md](./PORTS_REFERENCE.md)** - Detailed descriptions of all port types
-- **[PORTS.0-infinite-mainnet.md](./PORTS.0-infinite-mainnet.md)** - Mainnet port configuration
-- **[PORTS.1-infinite-testnet.md](./PORTS.1-infinite-testnet.md)** - Testnet port configuration
-- **[PORTS.2-infinite-creative.md](./PORTS.2-infinite-creative.md)** - Creative Network port configuration
-- **[ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)** - Environment variables reference
+- **[reference.md](./reference.md)** - Detailed descriptions of all port types
+- **[services/mainnet.md](./services/mainnet.md)** - Mainnet port configuration
+- **[services/testnet.md](./services/testnet.md)** - Testnet port configuration
+- **[services/creative.md](./services/creative.md)** - Creative Network port configuration
+- **[../environment/reference.md](../environment/reference.md)** - Environment variables reference

@@ -152,5 +152,5 @@ sudo ufw allow 8100/tcp
 
 ## See Also
 
-- [PORTS.md](./PORTS.md) - Port allocation strategy and general information
-- [PORTS_REFERENCE.md](./PORTS_REFERENCE.md) - Detailed port descriptions
+- [../strategy.md](../strategy.md) - Port allocation strategy and general information
+- [../reference.md](../reference.md) - Detailed port descriptions

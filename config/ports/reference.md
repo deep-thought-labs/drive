@@ -302,6 +302,6 @@ This endpoint can expose sensitive information about your application's internal
 
 ## See Also
 
-- [PORTS.md](./PORTS.md) - Port allocation strategy and service configuration
-- Service-specific port files (e.g., `PORTS.0-infinite-mainnet.md`)
+- [strategy.md](./strategy.md) - Port allocation strategy and service configuration
+- [services/](./services/) - Service-specific port files (e.g., `mainnet.md`)
 

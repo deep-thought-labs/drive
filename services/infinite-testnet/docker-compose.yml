@@ -17,7 +17,7 @@ services:
     ##################################################################################
 
     ports:
-      # See services/PORTS.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
       - "26666:26656"  # P2P
       - "26667:26657"  # RPC
     
@@ -25,8 +25,8 @@ services:
       - ./persistent-data:/home/ubuntu/.infinited
 
     environment:
-      # For complete documentation of all environment variables, see: services/ENVIRONMENT_VARIABLES.md
-      # For port allocation and configuration, see: services/PORTS.md
+      # For complete documentation of all environment variables, see: ../../config/environment/reference.md
+      # For port allocation and configuration, see: ../../config/ports/strategy.md
 
       ##################################################################################
       #                           Chain Identification                                 #
