@@ -75,6 +75,26 @@ service4-nginx/
 
 ## Basic Configuration
 
+### Initial Setup
+
+**Important:** Before the web server can serve content, you need a configuration file in `persistent-data/conf.d/`. 
+
+1. **Copy the example configuration file:**
+   ```bash
+   cd services/service4-nginx
+   cp conf.d.default.conf.example persistent-data/conf.d/default.conf
+   ```
+
+2. **Restart the container to load the configuration:**
+   ```bash
+   ./drive.sh restart
+   ```
+
+The example configuration file (`conf.d.default.conf.example`) provides a basic server block that:
+- Listens on port 80 (HTTP)
+- Serves files from `/usr/share/nginx/html` (mapped to `persistent-data/html/`)
+- Automatically loads configuration files from `/etc/nginx/conf.d/` (mapped to `persistent-data/conf.d/`)
+
 ### Adding Website Content
 
 1. **Place your files in `persistent-data/html/`:**
@@ -89,13 +109,6 @@ service4-nginx/
    ```bash
    ./drive.sh restart
    ```
-
-### Default Configuration
-
-The service uses Nginx's default configuration, which:
-- Serves files from `/usr/share/nginx/html` (mapped to `persistent-data/html/`)
-- Listens on ports 80 (HTTP) and 443 (HTTPS)
-- Automatically loads configuration files from `/etc/nginx/conf.d/` (mapped to `persistent-data/conf.d/`)
 
 ---
 

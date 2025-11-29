@@ -77,7 +77,19 @@ service4-nginx/
 2. The default `index.html` will be served at the root URL
 3. Restart the container if needed: `./drive.sh restart`
 
+### Initial Setup
+
+**Important:** Before the web server can serve content, you need a configuration file. Copy the example configuration:
+
+```bash
+cd services/service4-nginx
+cp conf.d.default.conf.example persistent-data/conf.d/default.conf
+./drive.sh restart
+```
+
 ### Configuring Virtual Hosts
+
+**Note:** A default configuration file (`default.conf`) should be created from the example. You can modify it or create additional configuration files.
 
 1. Create a configuration file in `persistent-data/conf.d/` (e.g., `mysite.conf`)
 2. Configure your site settings:
