@@ -1,8 +1,10 @@
 # Updating the System
 
-This guide explains how to update services that use the `deepthoughtlabs/infinite-drive:dev` Docker image. This includes all services with the `node` prefix in their folder name (e.g., `node0-infinite`, `node1-infinite-testnet`, `node2-infinite-creative`, `node3-qom`).
+This guide explains how to update services that use the `deepthoughtlabs/infinite-drive` Docker image. This includes all services with the `node` prefix in their folder name (e.g., `node0-infinite`, `node1-infinite-testnet`, `node2-infinite-creative`, `node3-qom`).
 
-**Note:** Future services that do not use the `infinite-drive` image may have different update procedures, which will be documented separately.
+**Note:** 
+- The Docker image version (tag) used depends on your environment (e.g., `dev` for development, `latest` or `test` for production). Check your `docker-compose.yml` files to see which version you're using.
+- Future services that do not use the `infinite-drive` image may have different update procedures, which will be documented separately.
 
 ## Overview
 
@@ -64,10 +66,28 @@ git pull
 # Fetch latest changes
 git fetch origin
 
+# Get the current branch name
+CURRENT_BRANCH=$(git branch --show-current)
+
 # Restore to latest version (WARNING: discards local changes)
 # This will restore all files to match the remote repository
 git restore .
-git reset --hard origin/main  # or origin/dev, depending on your branch
+git reset --hard origin/$CURRENT_BRANCH
+
+# Pull latest changes
+git pull
+```
+
+**Alternative:** If you prefer to specify the branch manually:
+
+```bash
+# Fetch latest changes
+git fetch origin
+
+# Restore to latest version (WARNING: discards local changes)
+# Replace 'main' with your branch name (e.g., 'dev', 'test', etc.)
+git restore .
+git reset --hard origin/main  # Change 'main' to your branch name
 
 # Pull latest changes
 git pull
@@ -80,27 +100,31 @@ git pull
 
 ### Step 3: Update Docker Images
 
-Since all services use the same image (`deepthoughtlabs/infinite-drive:dev`), you only need to pull it once from any service directory:
+Since all services use the same Docker image (check your `docker-compose.yml` to see which version/tag you're using), you only need to pull it once from any service directory:
 
 ```bash
 # Navigate to any service directory
 cd services/node0-infinite
 
 # Pull the latest image from Docker Hub
+# This will pull the version specified in docker-compose.yml
 docker compose pull
 ```
 
 **What this does:**
-- Downloads/updates the `deepthoughtlabs/infinite-drive:dev` image from Docker Hub
+- Downloads/updates the Docker image specified in your `docker-compose.yml` file
+- The image version depends on your configuration (e.g., `dev` for development, `latest` or `test` for production)
 - The updated image is available globally for all services (Docker images are shared system-wide)
 - You don't need to run `pull` in each service directory
 
 **Verify the image was updated:**
 
 ```bash
-# Check image details
+# Check image details (shows all infinite-drive images)
 docker images | grep "deepthoughtlabs/infinite-drive"
 ```
+
+**Note:** The image version you're using is specified in each service's `docker-compose.yml` file under the `image:` field. Make sure you're pulling the correct version for your environment.
 
 ### Step 4: Restart Services
 
@@ -177,9 +201,30 @@ cd /path/to/drive
 # Fetch latest changes
 git fetch origin
 
+# Get the current branch name automatically
+CURRENT_BRANCH=$(git branch --show-current)
+
 # Restore all files to match remote (discards local changes)
 git restore .
-git reset --hard origin/main  # or your branch name
+git reset --hard origin/$CURRENT_BRANCH
+
+# Pull latest changes
+git pull
+```
+
+**Alternative:** If you prefer to specify the branch manually:
+
+```bash
+# Navigate to drive root directory
+cd /path/to/drive
+
+# Fetch latest changes
+git fetch origin
+
+# Restore all files to match remote (discards local changes)
+# Replace 'main' with your actual branch name (e.g., 'dev', 'test', etc.)
+git restore .
+git reset --hard origin/main  # Change 'main' to your branch name
 
 # Pull latest changes
 git pull
@@ -197,9 +242,13 @@ git pull
 docker compose pull --no-cache
 
 # Or remove old image and pull fresh
-docker rmi deepthoughtlabs/infinite-drive:dev
+# First, check which image version you're using in docker-compose.yml
+# Then remove that specific image (replace 'dev' with your actual version)
+docker rmi deepthoughtlabs/infinite-drive:dev  # Change 'dev' to your version
 docker compose pull
 ```
+
+**Note:** Replace `dev` with the actual image version/tag you're using (check your `docker-compose.yml` file).
 
 ### Issue: Service won't start after update
 
@@ -221,6 +270,7 @@ docker compose pull
 - **Use `drive.sh`** for all container management commands when possible
 - **Persistent data is safe** - node data, blockchain state, and keys are stored separately and will not be affected by Git updates
 - **This update process applies to services using `infinite-drive` image** - services with different images may have different procedures
+- **Image version depends on your environment** - check `docker-compose.yml` files to see which version you're using (e.g., `dev`, `latest`, `test`)
 
 ## See Also
 
