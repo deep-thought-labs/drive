@@ -454,7 +454,7 @@ The update process involves:
 3. Updating Docker images
 4. Restarting services
 
-**Important:** The `drive` repository is an independent Git repository (submodule). Always perform Git operations from the `drive` root directory.
+**Important:** Always perform Git operations from the `drive` root directory.
 
 ### Complete Update Process
 
@@ -498,9 +498,6 @@ cd /path/to/drive  # or wherever your drive repository is located
 
 # Pull latest changes from Git
 git pull
-
-# If drive is a submodule, you may need to update submodules:
-# git submodule update --remote --merge
 ```
 
 **Note:** If you encounter conflicts or need to reset to the latest version:
