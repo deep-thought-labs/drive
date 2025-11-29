@@ -121,7 +121,27 @@ The default configuration file provides a basic server block that:
 
 You can configure multiple websites by creating site configuration files in `persistent-data/conf.d/`.
 
-### Basic Site Configuration
+### Quick Start: Using Configuration Examples
+
+**Easiest way:** Copy a ready-to-use configuration from `resources/configurations/`:
+
+```bash
+cd services/service4-nginx
+
+# Example: Copy file downloads configuration
+cp resources/configurations/file-downloads.conf persistent-data/conf.d/file-downloads.conf
+
+# Modify the file as needed (look for # MODIFY: comments)
+nano persistent-data/conf.d/file-downloads.conf
+
+# Test and reload
+docker compose exec nginx nginx -t
+docker compose exec nginx nginx -s reload
+```
+
+**Available configurations:** See [resources/README.md](../services/service4-nginx/resources/README.md) for a complete list of available configuration examples.
+
+### Manual Site Configuration
 
 1. **Create a configuration file:**
    ```bash
