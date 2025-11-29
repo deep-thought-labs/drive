@@ -450,11 +450,11 @@ This section explains how to update both the repository code and Docker images t
 
 The update process involves:
 1. Stopping running containers
-2. Updating the Git repository (user-module)
+2. Updating the Git repository (drive)
 3. Updating Docker images
 4. Restarting services
 
-**Important:** The `user-module` is an independent Git repository (submodule). Always perform Git operations from the `user-module` root directory.
+**Important:** The `drive` repository is an independent Git repository (submodule). Always perform Git operations from the `drive` root directory.
 
 ### Complete Update Process
 
@@ -480,7 +480,7 @@ cd ../node3-qom
 **Alternative:** If you want to stop all services at once, you can use a loop:
 
 ```bash
-# From user-module root directory
+# From drive root directory
 for service in services/node*/; do
     cd "$service"
     ./drive.sh down
@@ -490,16 +490,16 @@ done
 
 #### Step 2: Update Git Repository
 
-Navigate to the `user-module` root directory and pull the latest changes:
+Navigate to the `drive` root directory and pull the latest changes:
 
 ```bash
-# Navigate to user-module root
-cd /path/to/user-module  # or wherever your user-module is located
+# Navigate to drive root
+cd /path/to/drive  # or wherever your drive repository is located
 
 # Pull latest changes from Git
 git pull
 
-# If user-module is a submodule, you may need to update submodules:
+# If drive is a submodule, you may need to update submodules:
 # git submodule update --remote --merge
 ```
 
@@ -562,7 +562,7 @@ cd ../node3-qom
 **Alternative:** Restart all services at once:
 
 ```bash
-# From user-module root directory
+# From drive root directory
 for service in services/node*/; do
     cd "$service"
     ./drive.sh up -d
@@ -588,14 +588,14 @@ docker compose pull
 ./drive.sh up -d
 ```
 
-**Note:** For code updates, you still need to update the Git repository from the `user-module` root directory.
+**Note:** For code updates, you still need to update the Git repository from the `drive` root directory.
 
 ### Update Checklist
 
 Use this checklist to ensure a complete update:
 
 - [ ] Stop all running services (`./drive.sh down` in each service)
-- [ ] Navigate to `user-module` root directory
+- [ ] Navigate to `drive` root directory
 - [ ] Pull latest Git changes (`git pull`)
 - [ ] Navigate to any service directory
 - [ ] Pull latest Docker image (`docker compose pull`)
@@ -642,7 +642,7 @@ docker compose pull
 ### Important Notes
 
 - **Always stop services before updating** to prevent data corruption
-- **Git operations** should be performed from the `user-module` root directory
+- **Git operations** should be performed from the `drive` root directory
 - **Docker image pull** only needs to be done once (images are shared system-wide)
 - **Restart each service** after updating to use the new image
 - **Use `drive.sh`** for all container management commands when possible
