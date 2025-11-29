@@ -665,8 +665,9 @@ docker compose exec nginx nginx -s reload
 
 ### File Locations
 
+- **Configuration examples:** `resources/configurations/` - Ready-to-use config files
 - **Web content:** `persistent-data/html/`
-- **Site configs:** `persistent-data/conf.d/`
+- **Site configs:** `persistent-data/conf.d/` - Copy configs from `resources/` here
 - **SSL certificates:** `persistent-data/ssl/`
 - **Logs:** `persistent-data/logs/`
 
