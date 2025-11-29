@@ -26,6 +26,13 @@ Complete user guide for managing infrastructure services with Drive. This docume
   - Viewing container logs
   - Data persistence
 
+- **[Nginx Web Server](nginx-service.md)** - Complete guide to the Nginx web server service
+  - Starting and configuring the web server
+  - Setting up virtual hosts
+  - HTTPS/SSL configuration
+  - Reverse proxy setup
+  - Troubleshooting common issues
+
 - **[Configuration Reference](../config/)** - Complete configuration documentation
   - [Environment Variables](../config/environment/reference.md) - All available environment variables
   - [Port Allocation Strategy](../config/ports/strategy.md) - Port allocation logic and strategy
