@@ -1,7 +1,7 @@
 services:
   infinite:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:latest
+    image: deepthoughtlabs/infinite-drive:dev
     container_name: infinite
     # User configuration: Uses environment variables PUID and PGID if set, otherwise defaults to 1000:1000
     # To fix permission issues, set these before running docker-compose:

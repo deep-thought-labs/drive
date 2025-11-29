@@ -1,14 +1,9 @@
 services:
   infinite-creative:
-    # Core service settings (build, name, user, restart) - Creative Network blockchain node
-    # This builds the image locally from the Dockerfile in dev/ directory
-    build:
-      context: ../../../dev
-      dockerfile: Dockerfile
-    image: infinite-drive:creative-local
+    # Core service settings (image, name, user, restart) - not expected to be modified by users
+    image: deepthoughtlabs/infinite-drive:dev
     container_name: infinite-creative
     restart: unless-stopped
-    # Note: Container runs as user 1000:1000 (set in Dockerfile), no need for user: directive
 
     ##################################################################################
     #                       Editable Section Starts Here                             #
