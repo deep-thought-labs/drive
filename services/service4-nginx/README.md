@@ -79,17 +79,11 @@ service4-nginx/
 
 ### Initial Setup
 
-**Important:** Before the web server can serve content, you need a configuration file. Copy the example configuration:
-
-```bash
-cd services/service4-nginx
-cp conf.d.default.conf.example persistent-data/conf.d/default.conf
-./drive.sh restart
-```
+**Note:** A default configuration file (`default.conf`) is already included in `persistent-data/conf.d/`. The web server is ready to use immediately after starting the container.
 
 ### Configuring Virtual Hosts
 
-**Note:** A default configuration file (`default.conf`) should be created from the example. You can modify it or create additional configuration files.
+**Note:** The default configuration file (`default.conf`) is already present. You can modify it or create additional configuration files.
 
 1. Create a configuration file in `persistent-data/conf.d/` (e.g., `mysite.conf`)
 2. Configure your site settings:
