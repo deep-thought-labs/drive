@@ -425,6 +425,16 @@ docker compose exec infinite node-ui
 cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
 docker compose exec infinite-testnet node-ui
+
+# Creative Network node
+cd drive/services/node2-infinite-creative
+./drive.sh up -d
+docker compose exec infinite-creative node-ui
+
+# QOM Network node
+cd drive/services/node3-qom
+./drive.sh up -d
+docker compose exec qom node-ui
 ```
 
 **Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
@@ -432,8 +442,12 @@ docker compose exec infinite-testnet node-ui
 Each service maintains its own:
 - Container name
 - Persistent data directory
-- Configuration
-- Environment variables
+- Configuration (ports, environment variables)
+- Network settings
+
+**Configuration Reference:**
+- **Port Configuration:** See [`config/ports/services/`](../../config/ports/services/) for service-specific port configurations
+- **Environment Variables:** See [`config/environment/reference.md`](../../config/environment/reference.md) for all available variables
 
 ## Tips
 

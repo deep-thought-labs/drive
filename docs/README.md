@@ -26,15 +26,11 @@ Complete user guide for managing infrastructure services with Drive. This docume
   - Viewing container logs
   - Data persistence
 
-- **[Configuration](configuration.md)** - Customize your services
-  - Environment variables
-  - Port configuration
-  - Network settings
-  - Service-specific settings
-- **[Port Allocation](PORT_ALLOCATION.md)** - Port allocation strategy for multiple services
-  - Standard ports for mainnet
-  - Alternative ports for testnet and other services
-  - Running multiple services simultaneously
+- **[Configuration Reference](../config/)** - Complete configuration documentation
+  - [Environment Variables](../config/environment/reference.md) - All available environment variables
+  - [Port Allocation Strategy](../config/ports/strategy.md) - Port allocation logic and strategy
+  - [Port Reference Guide](../config/ports/reference.md) - Detailed port descriptions
+  - [Service-Specific Configurations](../config/ports/services/) - Individual service port configurations
 
 ## Monitoring & Maintenance
 
@@ -59,26 +55,37 @@ Complete user guide for managing infrastructure services with Drive. This docume
 
 ## Service Structure
 
-Drive organizes services in the following structure:
+Drive organizes services and configuration in the following structure:
 
 ```
 drive/
-└── services/
-    ├── node0-infinite/     # Mainnet blockchain node
-    │   ├── docker-compose.yml
-    │   ├── drive.sh          # Container management wrapper (recommended)
-    │   └── persistent-data/  # Service data (git-ignored)
-    └── node1-infinite-testnet/     # Testnet blockchain node
-        ├── docker-compose.yml
-        ├── drive.sh
-        └── persistent-data/  # Service data (git-ignored)
+├── services/                    # Service definitions
+│   ├── node0-infinite/          # Infinite Mainnet (Service #0)
+│   │   ├── docker-compose.yml   # Service configuration
+│   │   ├── drive.sh             # Container management wrapper (recommended)
+│   │   └── persistent-data/     # Service data (git-ignored)
+│   ├── node1-infinite-testnet/ # Infinite Testnet (Service #1)
+│   ├── node2-infinite-creative/ # Creative Network (Service #2)
+│   └── node3-qom/               # QOM Network (Service #3)
+└── config/                      # Configuration documentation
+    ├── environment/             # Environment variables documentation
+    │   ├── reference.md         # Complete environment variables reference
+    │   └── services/            # Service-specific environment configs
+    └── ports/                   # Port configuration documentation
+        ├── strategy.md          # Port allocation strategy
+        ├── reference.md        # Detailed port descriptions
+        └── services/            # Service-specific port configs
 ```
 
 Each service is completely independent with its own:
-- Configuration
-- Persistent data
+- Configuration (defined in `docker-compose.yml`)
+- Persistent data (stored in `persistent-data/`)
 - Container name
-- Network settings
+- Network settings (ports, P2P configuration)
+
+**Configuration Files:**
+- **Environment Variables:** See [`config/environment/reference.md`](../config/environment/reference.md) for all available variables
+- **Port Configuration:** See [`config/ports/strategy.md`](../config/ports/strategy.md) for port allocation strategy and service-specific configurations
 
 ## Quick Reference
 

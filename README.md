@@ -119,7 +119,42 @@ Full blockchain node for **Infinite Improbability Chain** testnet network.
 
 **Location:** `drive/services/node1-infinite-testnet/`
 
-**Note:** Uses different environment variables (chain ID, genesis URL, etc.) configured in its `docker-compose.yml` to connect to the testnet network.
+**Quick Commands:**
+```bash
+cd services/node1-infinite-testnet
+./drive.sh up -d
+docker compose exec infinite-testnet node-ui
+```
+
+### Infinite Creative Network
+
+Full blockchain node for **Infinite Improbability Chain** creative network.
+
+**Location:** `drive/services/node2-infinite-creative/`
+
+**Quick Commands:**
+```bash
+cd services/node2-infinite-creative
+./drive.sh up -d
+docker compose exec infinite-creative node-ui
+```
+
+### QOM Network
+
+Full blockchain node for **QOM Network**.
+
+**Location:** `drive/services/node3-qom/`
+
+**Quick Commands:**
+```bash
+cd services/node3-qom
+./drive.sh up -d
+docker compose exec qom node-ui
+```
+
+**Configuration:**
+- **Environment Variables:** See [`config/environment/reference.md`](config/environment/reference.md) for all available variables
+- **Port Configuration:** See [`config/ports/strategy.md`](config/ports/strategy.md) for port allocation and service-specific configurations
 
 ---
 
@@ -131,11 +166,12 @@ Full blockchain node for **Infinite Improbability Chain** testnet network.
 - [Quick Start](docs/quick-start.md) - Get started in 5 minutes
 - [Node Operations](docs/node-operations.md) - Complete guide to node commands
 - [Container Management](docs/container-management.md) - Container management with `drive.sh`
-- [Configuration](docs/configuration.md) - Service configuration guide
-- [Port Allocation](docs/PORT_ALLOCATION.md) - Port allocation strategy for multiple services
-- [Monitoring](docs/monitoring.md) - Monitor your services
-- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
-- [Key Management](docs/key-management.md) - Comprehensive key management guide
+- [Updating the System](docs/update-system.md) - How to update services and Docker images
+- [Configuration Reference](config/) - Complete configuration documentation
+  - [Environment Variables](config/environment/reference.md) - All available environment variables
+  - [Port Allocation Strategy](config/ports/strategy.md) - Port configuration and strategy
+  - [Port Reference Guide](config/ports/reference.md) - Detailed port descriptions
+  - [Service-Specific Configurations](config/ports/services/) - Individual service port configurations
 
 ---
 
@@ -151,6 +187,14 @@ cd services/node0-infinite
 # Testnet node (in another terminal)
 cd services/node1-infinite-testnet
 ./drive.sh up -d
+
+# Creative Network node
+cd services/node2-infinite-creative
+./drive.sh up -d
+
+# QOM Network node
+cd services/node3-qom
+./drive.sh up -d
 ```
 
 **Note:** Each service has its own `drive.sh` script for easy container management with automatic permission handling.
@@ -158,8 +202,12 @@ cd services/node1-infinite-testnet
 Each service maintains its own:
 - Container name
 - Persistent data directory
-- Network configuration
+- Network configuration (ports are automatically allocated based on service number)
 - Environment variables
+
+**Configuration Reference:**
+- **Port Configuration:** Each service's ports are documented in [`config/ports/services/`](config/ports/services/) - see the service-specific file for complete port mappings
+- **Environment Variables:** All available variables are documented in [`config/environment/reference.md`](config/environment/reference.md) - this is the complete reference for all configuration options
 
 ---
 

@@ -109,8 +109,10 @@ cd drive/services/node0-infinite
 ```
 
 **Available Services:**
-- `node0-infinite/` - Mainnet blockchain node
-- `node1-infinite-testnet/` - Testnet blockchain node
+- `node0-infinite/` - Infinite Mainnet blockchain node
+- `node1-infinite-testnet/` - Infinite Testnet blockchain node
+- `node2-infinite-creative/` - Infinite Creative Network blockchain node
+- `node3-qom/` - QOM Network blockchain node
 
 ## Step 2: Start the Container
 
@@ -343,16 +345,21 @@ cd drive/services/node1-infinite-testnet
 Each service has:
 - Its own container name
 - Its own persistent data directory
-- Its own network configuration
+- Its own network configuration (ports are automatically allocated based on service number)
 - Its own environment variables
+
+**Configuration Files:**
+- **Port Configuration:** Each service's ports are documented in [`config/ports/services/`](../config/ports/services/) - see the service-specific file (e.g., `node0-infinite.md`) for complete port mappings and firewall examples
+- **Environment Variables:** All available variables are documented in [`config/environment/reference.md`](../config/environment/reference.md) - this is the complete reference for all configuration options
 
 ## Next Steps
 
 - **[Node Operations](node-operations.md)** - Complete guide to all available commands
 - **[Container Management](container-management.md)** - Container management with `drive.sh`
-- **[Configuration](configuration.md)** - Customize your service
-- **[Monitoring](monitoring.md)** - Monitor your node health
-- **[Troubleshooting](troubleshooting.md)** - Solve common issues
+- **[Updating the System](update-system.md)** - How to update services and Docker images
+- **[Configuration Reference](../config/)** - Complete configuration documentation
+  - [Environment Variables](../config/environment/reference.md) - All available environment variables
+  - [Port Allocation Strategy](../config/ports/strategy.md) - Port configuration and strategy
 
 ## Quick Reference
 

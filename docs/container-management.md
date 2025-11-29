@@ -466,13 +466,27 @@ docker compose exec infinite node-ui
 cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
 docker compose exec infinite-testnet node-ui
+
+# Service 3: Creative Network
+cd drive/services/node2-infinite-creative
+./drive.sh up -d
+docker compose exec infinite-creative node-ui
+
+# Service 4: QOM Network
+cd drive/services/node3-qom
+./drive.sh up -d
+docker compose exec qom node-ui
 ```
 
 Each service maintains its own:
 - Container name
 - Persistent data directory (`persistent-data/`)
-- Network configuration
+- Network configuration (ports are automatically allocated based on service number)
 - Environment variables
+
+**Configuration Files:**
+- **Port Configuration:** Each service's ports are documented in [`config/ports/services/`](../../config/ports/services/) - see the service-specific file for complete port mappings and firewall examples
+- **Environment Variables:** All available variables are documented in [`config/environment/reference.md`](../../config/environment/reference.md) - this is the complete reference for all configuration options
 
 ## Important Notes
 
