@@ -53,11 +53,21 @@ service4-nginx/
 ├── docker-compose.yml
 ├── drive.sh
 ├── README.md
+├── resources/             # Configuration examples and templates
+│   ├── README.md          # Guide to all configuration examples
+│   ├── configurations/    # Ready-to-use configuration files
+│   │   ├── file-downloads.conf
+│   │   ├── reverse-proxy-rpc.conf
+│   │   ├── https-ssl.conf
+│   │   └── ... (more examples)
+│   ├── snippets/          # Reusable configuration snippets
+│   └── examples/          # Complete example configurations
 └── persistent-data/
     ├── html/              # Web content (HTML, CSS, JS, images)
     │   └── index.html     # Default welcome page
     ├── conf.d/            # Nginx site configurations
-    │   └── .gitkeep
+    │   ├── default.conf   # Default server configuration (versioned)
+    │   └── .gitignore     # Ignores user configs, keeps default.conf
     ├── logs/              # Nginx access and error logs
     │   └── .gitkeep
     └── ssl/               # SSL certificates for HTTPS
@@ -66,8 +76,14 @@ service4-nginx/
 
 ### Directory Descriptions
 
+- **`resources/`** - Configuration examples and templates. Contains ready-to-use configuration files that you can copy to `conf.d/`. See [resources/README.md](../services/service4-nginx/resources/README.md) for a complete guide.
+  - **`configurations/`** - Complete, ready-to-use configuration files (file downloads, reverse proxy, HTTPS, rate limiting, CORS, etc.)
+  - **`snippets/`** - Reusable configuration fragments (gzip compression, SSL parameters, logging formats)
+  - **`examples/`** - Complete example configurations combining multiple features (blockchain API gateway, file sharing server)
 - **`html/`** - Place your website files here. This directory is served as the web root (`/usr/share/nginx/html` inside the container).
 - **`conf.d/`** - Add Nginx site configuration files (`.conf`) here. These are automatically loaded by Nginx.
+  - Copy configuration files from `resources/configurations/` to this directory
+  - The `default.conf` file is already present and versioned
 - **`logs/`** - Nginx access and error logs are written here. Logs persist across container restarts.
 - **`ssl/`** - Place SSL certificates here for HTTPS functionality. Certificates are mounted to `/etc/nginx/ssl/` inside the container.
 
@@ -578,6 +594,20 @@ This service uses standard web ports and does NOT follow the port offset formula
 For complete port configuration details, see [`../config/ports/services/service4-nginx.md`](../config/ports/services/service4-nginx.md).
 
 ---
+
+## Configuration Resources
+
+Ready-to-use configuration examples are available in the `resources/` directory:
+
+- **[Configuration Examples Guide](../services/service4-nginx/resources/README.md)** - Complete guide to all available configurations
+- **Most Common Configurations:**
+  - [File Downloads](../services/service4-nginx/resources/configurations/file-downloads.conf) - Serve downloadable files from a directory
+  - [Reverse Proxy RPC](../services/service4-nginx/resources/configurations/reverse-proxy-rpc.conf) - Proxy requests to blockchain node RPC endpoints
+  - [HTTPS/SSL](../services/service4-nginx/resources/configurations/https-ssl.conf) - Complete HTTPS/SSL setup with HTTP to HTTPS redirect
+  - [Rate Limiting](../services/service4-nginx/resources/configurations/rate-limiting.conf) - Protect endpoints from abuse
+  - [CORS API](../services/service4-nginx/resources/configurations/cors-api.conf) - Configure CORS headers for API endpoints
+
+All configuration files are complete and ready to copy to `persistent-data/conf.d/`. Each file includes `# MODIFY:` comments indicating where to customize the configuration.
 
 ## See Also
 

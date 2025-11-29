@@ -49,11 +49,18 @@ For complete port configuration details, see [`../../config/ports/services/servi
 service4-nginx/
 ├── docker-compose.yml
 ├── drive.sh
+├── README.md
+├── resources/             # Configuration examples and templates
+│   ├── README.md          # Guide to all configuration examples
+│   ├── configurations/    # Ready-to-use configuration files
+│   ├── snippets/          # Reusable configuration snippets
+│   └── examples/          # Complete example configurations
 └── persistent-data/
     ├── html/              # Web content (HTML, CSS, JS, images)
     │   └── index.html     # Default welcome page
     ├── conf.d/            # Nginx site configurations
-    │   └── .gitkeep
+    │   ├── default.conf   # Default server configuration (versioned)
+    │   └── .gitignore     # Ignores user configs, keeps default.conf
     ├── logs/              # Nginx access and error logs
     │   └── .gitkeep
     └── ssl/               # SSL certificates for HTTPS
@@ -62,8 +69,13 @@ service4-nginx/
 
 ### Directory Descriptions
 
+- **`resources/`** - Configuration examples and templates. See [resources/README.md](resources/README.md) for complete guide.
+  - **`configurations/`** - Ready-to-use configuration files (file downloads, reverse proxy, HTTPS, etc.)
+  - **`snippets/`** - Reusable configuration fragments (gzip, SSL params, logging)
+  - **`examples/`** - Complete example configurations combining multiple features
 - **`html/`** - Place your website files here. This directory is served as the web root.
 - **`conf.d/`** - Add Nginx site configuration files (`.conf`) here. These are automatically loaded by Nginx.
+  - Copy configuration files from `resources/configurations/` to this directory
 - **`logs/`** - Nginx access and error logs are written here.
 - **`ssl/`** - Place SSL certificates here for HTTPS functionality.
 
@@ -85,6 +97,15 @@ service4-nginx/
 
 **Note:** The default configuration file (`default.conf`) is already present. You can modify it or create additional configuration files.
 
+**Quick Start:** Copy a ready-to-use configuration from `resources/configurations/`:
+```bash
+cd services/service4-nginx
+cp resources/configurations/file-downloads.conf persistent-data/conf.d/file-downloads.conf
+# Modify the file as needed (look for # MODIFY: comments)
+./drive.sh restart
+```
+
+**Manual Configuration:**
 1. Create a configuration file in `persistent-data/conf.d/` (e.g., `mysite.conf`)
 2. Configure your site settings:
 
