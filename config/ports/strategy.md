@@ -51,9 +51,12 @@ Each service is assigned a **Service Number** starting from 0:
 - **Service #0** = Mainnet (uses standard ports)
 - **Service #1** = Testnet
 - **Service #2** = Creative Network
-- **Service #3** = Custom Network 1
-- **Service #4** = Custom Network 2
+- **Service #3** = QOM Network
+- **Service #4** = Nginx Web Server (⚠️ **Exception:** uses standard ports 80/443, no offset)
+- **Service #5+** = Future services (follow standard offset formula)
 - And so on...
+
+**⚠️ Exception:** Service #4 (Nginx) does NOT follow the port offset formula. As the primary web/proxy server, it uses standard HTTP/HTTPS ports (80, 443) instead of calculated ports. See [service4-nginx.md](./services/service4-nginx.md) for details.
 
 ### Port Calculation Formula
 
@@ -181,4 +184,5 @@ ports:
 - **[services/node1-infinite-testnet.md](./services/node1-infinite-testnet.md)** - Testnet port configuration
 - **[services/node2-infinite-creative.md](./services/node2-infinite-creative.md)** - Creative Network port configuration
 - **[services/node3-qom.md](./services/node3-qom.md)** - QOM Network port configuration
+- **[services/service4-nginx.md](./services/service4-nginx.md)** - Nginx Web Server port configuration (exception: standard ports)
 - **[../environment/reference.md](../environment/reference.md)** - Environment variables reference

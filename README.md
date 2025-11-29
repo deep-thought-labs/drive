@@ -89,6 +89,10 @@ drive/
 │   │   ├── docker-compose.yml
 │   │   ├── drive.sh
 │   │   └── persistent-data/
+│   ├── service4-nginx/          # Nginx Web Server (⚠️ Exception: uses standard ports 80/443)
+│   │   ├── docker-compose.yml
+│   │   ├── drive.sh
+│   │   └── persistent-data/
 │   └── [other-services]/       # Additional blockchains, services, and infrastructure
 ├── docs/                        # User documentation
 └── README.md                    # This file
@@ -156,6 +160,32 @@ docker compose exec qom node-ui
 - **Environment Variables:** See [`config/environment/reference.md`](config/environment/reference.md) for all available variables
 - **Port Configuration:** See [`config/ports/strategy.md`](config/ports/strategy.md) for port allocation and service-specific configurations
 
+### Nginx Web Server
+
+Primary web server and reverse proxy for Drive infrastructure.
+
+**Location:** `drive/services/service4-nginx/`
+
+**Quick Commands:**
+```bash
+cd services/service4-nginx
+./drive.sh up -d
+```
+
+**Access:** Open `http://localhost` in your browser (port 80) or `https://localhost` (port 443)
+
+**⚠️ Important:** This service is an **exception** to the port allocation strategy. It uses standard web ports (80, 443) instead of calculated ports, as it's the primary web/proxy server.
+
+**Configuration:**
+- **Port Configuration:** See [`config/ports/services/service4-nginx.md`](config/ports/services/service4-nginx.md) for complete port configuration
+- **Directory Structure:**
+  - `persistent-data/html/` - Web content (HTML, CSS, JS, images)
+  - `persistent-data/conf.d/` - Nginx site configurations
+  - `persistent-data/logs/` - Nginx access and error logs
+  - `persistent-data/ssl/` - SSL certificates for HTTPS
+
+**Note:** Cache is not persistent and clears on container restart.
+
 ---
 
 ## Documentation
@@ -194,6 +224,10 @@ cd services/node2-infinite-creative
 
 # QOM Network node
 cd services/node3-qom
+./drive.sh up -d
+
+# Nginx Web Server
+cd services/service4-nginx
 ./drive.sh up -d
 ```
 

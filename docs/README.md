@@ -66,7 +66,8 @@ drive/
 │   │   └── persistent-data/     # Service data (git-ignored)
 │   ├── node1-infinite-testnet/ # Infinite Testnet (Service #1)
 │   ├── node2-infinite-creative/ # Creative Network (Service #2)
-│   └── node3-qom/               # QOM Network (Service #3)
+│   ├── node3-qom/               # QOM Network (Service #3)
+│   └── service4-nginx/         # Nginx Web Server (Service #4) ⚠️ Exception: uses standard ports 80/443
 └── config/                      # Configuration documentation
     ├── environment/             # Environment variables documentation
     │   ├── reference.md         # Complete environment variables reference

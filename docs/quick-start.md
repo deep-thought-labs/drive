@@ -113,6 +113,7 @@ cd drive/services/node0-infinite
 - `node1-infinite-testnet/` - Infinite Testnet blockchain node
 - `node2-infinite-creative/` - Infinite Creative Network blockchain node
 - `node3-qom/` - QOM Network blockchain node
+- `service4-nginx/` - Nginx Web Server (⚠️ Exception: uses standard ports 80/443)
 
 ## Step 2: Start the Container
 
