@@ -39,8 +39,8 @@ services:
       ##################################################################################
       NODE_CHAIN_ID: "infinite_421018001-1"
       NODE_EVM_CHAIN_ID: "421018001"
-      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/drive/refs/heads/main/services/node1-infinite-testnet/genesis.json"
-
+      NODE_GENESIS_URL: "" # To be updated
+      
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
