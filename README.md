@@ -21,23 +21,20 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 
 ---
 
-## 🚀 Quick Start
-
-Get started with Drive by following the complete [Quick Start Guide](docs/quick-start.md), which covers prerequisites, firewall configuration, repository setup, node initialization, and both graphical and command-line operations.
-
-**Start here:** [Quick Start Guide](docs/quick-start.md)
-
----
-
 ## Project Structure
 
 ```
 drive/
 ├── services/                    # Service definitions
-│   ├── infinite-mainnet/        # Infinite Mainnet blockchain node
-│   ├── infinite-testnet/       # Infinite Testnet blockchain node
+│   ├── node0-infinite/          # Infinite Mainnet blockchain node
+│   │   ├── docker-compose.yml  # Service configuration
+│   │   ├── drive.sh            # Container management wrapper (recommended)
+│   │   └── persistent-data/    # Persistent blockchain data (git-ignored)
+│   ├── node1-infinite-testnet/ # Infinite Testnet blockchain node
+│   │   ├── docker-compose.yml
+│   │   ├── drive.sh
+│   │   └── persistent-data/
 │   └── [other-services]/       # Additional blockchains, services, and infrastructure
-├── docs/                        # User documentation
 └── README.md                    # This file
 ```
 
@@ -48,37 +45,12 @@ Each service directory contains:
 
 ---
 
-## Available Services
-
-### Infinite Mainnet
-
-Full blockchain node for **Infinite Improbability Chain** mainnet network.
-
-**Location:** `drive/services/infinite-mainnet/`
-
-### Infinite Testnet
-
-Full blockchain node for **Infinite Improbability Chain** testnet network.
-
-**Location:** `drive/services/infinite-testnet/`
-
-**Note:** Configured with different environment variables (chain ID, genesis URL, etc.) to connect to the testnet network.
-
----
-
 ## Documentation
 
-**Start here:** [Quick Start Guide](docs/quick-start.md)
+Complete documentation for Drive is available in our dedicated documentation repository:
 
-**Full Documentation:**
-- [Quick Start](docs/quick-start.md) - Get started in 5 minutes
-- [Node Operations](docs/node-operations.md) - Complete guide to node commands
-- [Container Management](docs/container-management.md) - Container management with `drive.sh`
-- [Configuration](docs/configuration.md) - Service configuration guide
-- [Port Allocation](docs/PORT_ALLOCATION.md) - Port allocation strategy for multiple services
-- [Monitoring](docs/monitoring.md) - Monitor your services
-- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
-- [Key Management](docs/key-management.md) - Comprehensive key management guide
+- **📚 Documentation Site:** [docs.infinitedrive.xyz](https://docs.infinitedrive.xyz)
+- **📖 GitHub Repository:** [github.com/deep-thought-labs/drive-docs](https://github.com/deep-thought-labs/drive-docs)
 
 ---
 
@@ -93,38 +65,21 @@ Drive is designed as an **open service orchestrator** with the following charact
 
 ---
 
-## Adding New Services
-
-To add a new service:
-
-1. Create a new directory under `drive/services/`
-2. Copy `docker-compose.yml` from an existing service as a template
-3. Modify environment variables and configuration as needed
-4. Update the service name and container name to be unique
-5. Create a `persistent-data/` directory (will be git-ignored automatically)
-
-Drive provides the same unified management interface for any blockchain, database, web service, or containerized application.
-
----
-
 ## Community
 
 - **Project**: [infinitedrive.xyz](https://infinitedrive.xyz)
 - **Lab**: [Deep Thought Labs](https://deep-thought.computer) - Research laboratory developing Infinite Drive
 - **X**: [@DeepThought_Lab](https://x.com/DeepThought_Lab)
-- **Telegram**: Deep Thought Labs
+- **Telegram**: [Deep Thought Computer](https://t.me/+nt8ysid_-8VlMDVh)
 - **Client**: [Drive](https://github.com/deep-thought-labs/drive) - Infrastructure management client (this repository)
 
 ---
 
 ## Contributing
 
-Drive is an open infrastructure management platform, designed for **Infinite Improbability Chain** and extensible to any blockchain or service. Part of the **Infinite Drive** ecosystem and **Project 42**. When contributing:
+Drive is an open infrastructure management platform, designed for **Infinite Improbability Chain** and extensible to any blockchain or service. Part of the **Infinite Drive** ecosystem and **Project 42**.
 
-1. Follow the service structure conventions
-2. Document new services in the `docs/` directory
-3. Ensure each service is self-contained
-4. Update this README when adding new service types
+Join our Telegram channel to stay in touch with the development team and contribute to the project.
 
 ---
 
@@ -136,7 +91,7 @@ Apache 2.0
 
 ## Support
 
-For issues, questions, or contributions, please refer to the [Quick Start Guide](docs/quick-start.md) or open an issue in the repository.
+For issues, questions, or contributions, please refer to the [documentation](https://docs.infinitedrive.xyz) or open an issue in the repository.
 
 ---
 

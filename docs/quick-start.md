@@ -751,18 +751,15 @@ Drive organizes services in separate directories. Each service is independent an
 **Navigate to your chosen service:**
 
 ```bash
-# For Mainnet (production network):
-cd services/infinite-mainnet
-
-# OR for Testnet (testing network):
-cd services/infinite-testnet
+# Navigate to the Infinite Mainnet service
+cd drive/services/node0-infinite
 ```
 
 **Available Services:**
-- `infinite-mainnet/` - Mainnet blockchain node (production network)
-- `infinite-testnet/` - Testnet blockchain node (testing network)
-
-**Note:** You can run multiple services simultaneously by opening separate terminal windows and navigating to different service directories.
+- `node0-infinite/` - Infinite Mainnet blockchain node
+- `node1-infinite-testnet/` - Infinite Testnet blockchain node
+- `node2-infinite-creative/` - Infinite Creative Network blockchain node
+- `node3-qom/` - QOM Network blockchain node
 
 ## Step 3: Start the Container
 
@@ -816,73 +813,144 @@ The easiest way to manage your node is through the built-in graphical interface.
 ./drive.sh up -d
 
 # Open the graphical interface
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 ```
 
 ### Understanding the Interface Structure
 
-The graphical interface is organized into **submenus** that you navigate using arrow keys and Enter:
+The graphical interface provides:
+- **Visual menus** - Navigate with arrow keys and Enter
+- **Self-descriptive options** - Each option explains what it does
+- **Interactive wizards** - Step-by-step guidance for all operations
+- **Real-time information** - Status, logs, and monitoring in one place
 
-- **Key Management** (Submenu) - Create, add, list, or manage cryptographic keys
-- **Node Operations** (Submenu) - Essential operations: Start, stop, restart the node
-- **Advanced Operations** (Submenu) - Initialize node, initialize with recovery (for validators), delete node data
-- **Node Monitoring** (Submenu) - Check node status, view logs, follow logs in real-time, network diagnosis
+### First-Time Setup Through the Interface
 
-**Navigation:** Use arrow keys (↑↓) to move, Enter to select, and Esc or "Back" to return to previous menus. You can navigate freely between submenus.
+#### For Validator Nodes (Requires Seed Phrase)
 
-### First-Time Setup
+**⚠️ IMPORTANT:** Complete these steps in order:
 
-**⚠️ Reminder:** If you're setting up a validator node, add your keys to the keyring first:
+1. **Ensure container is running:** `./drive.sh up -d`
+2. **Open the interface:** `./drive.sh exec infinite node-ui`
+3. **Navigate to "Key Management"** → **"Generate Key (Dry-Run - Recommended)"**
+4. **Create your key:**
+   - Enter a name for your key (e.g., `my-validator`)
+   - The system will display your **seed phrase** (12 or 24 words)
+   - **⚠️ CRITICAL:** Write down and securely back up this seed phrase immediately
+   - This seed phrase is the **ONLY** way to recover your validator keys
+5. **Navigate to "Advanced Operations"** → **"Initialize with Recovery (Validator)"**
+6. **Enter your seed phrase** when prompted (the one you just created and backed up)
+7. **Enter a moniker** (node name) when requested
+8. **After initialization, select "Start Node"** from Node Operations
+9. **Use "Node Monitoring"** to check status and view logs
 
-1. Navigate to **"Key Management"** from the main menu
-   - **Create new key:** Choose **"Generate and Save Key"** (if starting fresh)
-   - **Add existing key:** Choose **"Add Existing Key from Seed Phrase"** (if you already have keys)
-   - After creating/adding your key, navigate back to the main menu (Esc or "Back")
-2. Navigate to **"Advanced Operations"** → **"Initialize Node"**
-   - For validators: Choose **"Initialize with Recovery (Validator)"** and select your key
-   - For simple nodes: Choose **"Initialize Node (Simple)"**
-3. Enter a moniker (node name) when prompted
-4. After initialization, navigate to **"Node Operations"** → **"Start Node"**
-5. Use **"Node Monitoring"** to check status and view logs
+**📖 Need Help?** See the [Key Management Guide](key-management.md) for complete key creation and backup procedures.
 
-The interface provides visual menus for all operations. See [Node Operations](node-operations.md) for complete documentation.
+#### For Simple Nodes (No Validator)
 
-## Step 6: Command Line Interface (Advanced)
+1. **Ensure container is running:** `./drive.sh up -d`
+2. **Open the interface:** `./drive.sh exec infinite node-ui`
+3. **Navigate to "Advanced Operations"** → **"Initialize Node (Simple)"**
+3. **Follow the interactive prompts:**
+   - Enter a moniker (node name) when requested
+   - Confirm any warnings about random keys (these are safe for non-validator nodes)
+4. **After initialization, select "Start Node"** from Node Operations
+5. **Use "Node Monitoring"** to check status and view logs
 
-For command-line operations, use these commands:
+**That's it!** The interface handles everything else. You can perform all operations through the menus without remembering any commands.
 
-### Add Keys to Keyring (Validators Only)
+### Common Operations in the Interface
 
-**⚠️ Reminder:** If you're setting up a validator node, add your keys to the keyring first:
+- **Key Management** - Create, list, show, or delete keys (see [Key Management Guide](key-management.md))
+- **Node Operations** - Start, stop, restart the node
+- **Node Monitoring** - View logs, check status, network diagnosis
+- **System Information** - Container and node details
+
+## Step 5: Advanced - Command Line Interface (Optional)
+
+If you prefer command-line operations or need to automate tasks, you can use direct commands. This method is for advanced users who are comfortable with terminal commands.
+
+### Initialize Node (First Time Only)
+
+#### 🔴 Validator Node (Requires Seed Phrase - READ THIS FIRST!)
+
+**⚠️ CRITICAL:** If you're setting up a validator node, you **MUST** create a key first and save the seed phrase before initialization.
+
+**Step-by-step workflow:**
+
+1. **Start the container (if not running):**
+   ```bash
+   cd drive/services/node0-infinite
+   ./drive.sh up -d
+   ```
+
+2. **Create your key (REQUIRED FIRST STEP):**
+   ```bash
+   ./drive.sh exec infinite node-keys create my-validator --dry-run
+   ```
+   
+   **What happens:**
+   - The system generates a cryptographic key
+   - **Displays your seed phrase (12 or 24 words)**
+   - **⚠️ CRITICAL:** Write down and securely back up this seed phrase immediately
+   - The key is NOT saved to the keyring (that's why it's called "dry-run")
+   
+   **📖 Complete Guide:** See the [Key Management Guide](key-management.md) for detailed instructions on creating, backing up, and managing keys.
+
+3. **Back up your seed phrase securely:**
+   - Write it on paper and store it safely
+   - Or use a metal backup solution
+   - Or store it in encrypted storage
+   - **This is the ONLY way to recover your validator keys**
+
+4. **Initialize with recovery (use your seed phrase):**
+   ```bash
+   ./drive.sh exec -it node0-infinite node-init --recover
+   ```
+   
+   **What happens:**
+   - Prompts you to enter your seed phrase (the one you just created and backed up)
+   - Prompts you to enter a moniker (node name)
+   - Initializes the node with your validator keys
+   
+5. **(Optional) Add key to keyring for later use:**
+   ```bash
+   ./drive.sh exec -it node0-infinite node-keys add my-validator
+   ```
+   Enter your seed phrase when prompted to add it to the keyring.
+
+**Why use dry-run first?** This approach gives you complete control:
+- You generate the key and back it up yourself
+- You verify your backup before committing
+- You maintain full ownership of your keys
+- You can choose when/if to add the key to the keyring
+
+#### ✅ Simple Node (No Validator)
+
+**If you're NOT running a validator**, you can proceed directly with simple initialization:
 
 ```bash
-# Create a new key and add to keyring (if starting fresh):
-./drive.sh exec -it infinite-mainnet node-keys create my-validator
-
-# Add an existing key from seed phrase (if you already have keys):
-./drive.sh exec -it infinite-mainnet node-keys add my-validator
-```
-
-### Initialize Node
-
-```bash
-# For validator nodes (requires key in keyring):
-./drive.sh exec -it infinite-mainnet node-init --recover
-
-# For simple nodes:
-./drive.sh exec infinite-mainnet node-init
+cd drive/services/node0-infinite
+# Start the container first (if not running)
+./drive.sh up -d
+# Initialize the node
+./drive.sh exec infinite node-init
 ```
 
 ### Start the Node
 
 ```bash
-./drive.sh exec infinite-mainnet node-start
+# Ensure container is running
+./drive.sh up -d
+# Start the node
+./drive.sh exec infinite node-start
 ```
 
 ### Check Status
 
 ```bash
-./drive.sh exec infinite-mainnet node-process-status
+# Check node process status
+./drive.sh exec infinite node-process-status
 ```
 
 **Complete command reference:** See [Node Operations](node-operations.md) for all available commands.
@@ -893,12 +961,12 @@ You can run multiple services simultaneously. Each service is completely indepen
 
 ```bash
 # Terminal 1: Mainnet node
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 
 # Terminal 2: Testnet node
-cd drive/services/infinite-testnet
+cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
 ./drive.sh exec infinite-testnet node-ui
 ```
@@ -906,25 +974,30 @@ cd drive/services/infinite-testnet
 Each service has:
 - Its own container name
 - Its own persistent data directory
-- Its own network configuration
+- Its own network configuration (ports are automatically allocated based on service number)
 - Its own environment variables
+
+**Configuration Files:**
+- **Port Configuration:** Each service's ports are documented in [`config/ports/services/`](../config/ports/services/) - see the service-specific file (e.g., `node0-infinite.md`) for complete port mappings and firewall examples
+- **Environment Variables:** All available variables are documented in [`config/environment/reference.md`](../config/environment/reference.md) - this is the complete reference for all configuration options
 
 ## Next Steps
 
 - **[Node Operations](node-operations.md)** - Complete guide to all available commands
 - **[Container Management](container-management.md)** - Container management with `drive.sh`
-- **[Configuration](configuration.md)** - Customize your service
-- **[Monitoring](monitoring.md)** - Monitor your node health
-- **[Troubleshooting](troubleshooting.md)** - Solve common issues
+- **[Updating the System](update-system.md)** - How to update services and Docker images
+- **[Configuration Reference](../config/)** - Complete configuration documentation
+  - [Environment Variables](../config/environment/reference.md) - All available environment variables
+  - [Port Allocation Strategy](../config/ports/strategy.md) - Port configuration and strategy
 
 ## Quick Reference
 
 ### Using the Graphical Interface (Easiest)
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec).
@@ -932,11 +1005,11 @@ cd drive/services/infinite-mainnet
 ### Using Command Line (Advanced)
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-init
-./drive.sh exec infinite-mainnet node-start
-./drive.sh exec infinite-mainnet node-process-status
+./drive.sh exec infinite node-init
+./drive.sh exec infinite node-start
+./drive.sh exec infinite node-process-status
 ```
 
 **Note:** Use `./drive.sh` for all commands to automatically handle permissions and ensure consistency.

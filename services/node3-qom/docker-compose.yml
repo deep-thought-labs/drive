@@ -1,0 +1,61 @@
+services:
+  qom:
+    # Core service settings (image, name, user, restart) - not expected to be modified by users
+    image: deepthoughtlabs/infinite-drive:latest
+    container_name: qom
+    restart: unless-stopped
+
+    ##################################################################################
+    #                       Editable Section Starts Here                             #
+    # Customize ports, volumes, and environment variables as needed below.           #
+    ##################################################################################
+
+    ports:
+      # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/services/node3-qom.md for complete port configuration
+      # Required ports
+      - "26686:26656"  # P2P
+      - "26687:26657"  # RPC
+      
+      # Optional ports (uncomment if needed)
+      # - "9120:9090"    # gRPC
+      # - "9121:9091"    # gRPC-Web
+      # - "1347:1317"    # REST API
+      # - "8575:8545"    # JSON-RPC HTTP
+      # - "8576:8546"    # JSON-RPC WebSocket
+      # - "26690:26660"  # Prometheus
+      # - "6095:6065"    # EVM Metrics
+      # - "8130:8100"    # Geth Metrics
+    
+    volumes:
+      - ./persistent-data:/home/ubuntu/.qomd
+
+    environment:
+      # For complete documentation of all environment variables, see: ../../config/environment/reference.md
+      # For port allocation and configuration, see: ../../config/ports/strategy.md
+
+      ##################################################################################
+      #                           Chain Identification                                 #
+      ##################################################################################
+      NODE_CHAIN_ID: "qom_766-1"
+      NODE_EVM_CHAIN_ID: "766"
+      NODE_GENESIS_URL: "https://raw.githubusercontent.com/deep-thought-labs/babelfish-vm/main/resources/genesis.json"
+
+      ##################################################################################
+      #                           Network P2P Configuration                            #
+      ##################################################################################
+      NODE_P2P_SEEDS: "7768864af4003165c10b77802a673006f98d54c6@p2p.foxxone.one:26656"
+      NODE_PERSISTENT_PEERS: "7768864af4003165c10b77802a673006f98d54c6@p2p.foxxone.one:26656"
+      # NODE_P2P_EXTERNAL_ADDRESS: ""
+
+      ##################################################################################
+      #                    Alternative Binary Configuration                            #
+      ##################################################################################
+      NODE_ALT_BINARY_URL_AMD64: "https://github.com/WizardLatino/test-qom-node/releases/download/v1.0.1/qomd-linux-amd64"
+      NODE_ALT_BINARY_NAME: "qomd"
+      NODE_ALT_HOME: "/home/ubuntu/.qomd"
+
+    ### End environment variables
+  ### End service qom
+### End docker-compose.yml
+

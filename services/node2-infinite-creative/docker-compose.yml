@@ -1,0 +1,54 @@
+services:
+  infinite-creative:
+    # Core service settings (image, name, user, restart) - not expected to be modified by users
+    image: deepthoughtlabs/infinite-drive:latest
+    container_name: infinite-creative
+    restart: unless-stopped
+
+    ##################################################################################
+    #                       Editable Section Starts Here                             #
+    # Customize ports, volumes, and environment variables as needed below.           #
+    ##################################################################################
+
+    ports:
+      # See ../../config/ports/strategy.md for port allocation strategy and conflict resolution
+      # See ../../config/ports/services/node2-infinite-creative.md for complete port configuration
+      # Required ports
+      - "26676:26656"  # P2P
+      - "26677:26657"  # RPC
+      
+      # Optional ports (uncomment if needed)
+      # - "9110:9090"    # gRPC
+      # - "9111:9091"    # gRPC-Web
+      # - "1337:1317"    # REST API
+      # - "8565:8545"    # JSON-RPC HTTP
+      # - "8566:8546"    # JSON-RPC WebSocket
+      # - "26680:26660"  # Prometheus
+      # - "6085:6065"    # EVM Metrics
+      # - "8120:8100"    # Geth Metrics
+    
+    volumes:
+      - ./persistent-data:/home/ubuntu/.infinited
+
+    environment:
+      # For complete documentation of all environment variables, see: ../../config/environment/reference.md
+      # For port allocation and configuration, see: ../../config/ports/strategy.md
+
+      ##################################################################################
+      #                           Chain Identification                                 #
+      ##################################################################################
+      NODE_CHAIN_ID: "infinite_421018002-1"
+      NODE_EVM_CHAIN_ID: "421018002"
+      NODE_GENESIS_URL: "" # To be updated
+      
+      ##################################################################################
+      #                           Network P2P Configuration                            #
+      ##################################################################################
+      NODE_P2P_SEEDS: ""
+      # NODE_PERSISTENT_PEERS: ""
+      # NODE_P2P_EXTERNAL_ADDRESS: "" 
+
+    ### End environment variables
+  ### End service infinite-creative
+### End docker-compose.yml
+

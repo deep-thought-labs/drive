@@ -10,13 +10,13 @@ The **easiest way** to manage your node is through the built-in graphical interf
 
 ```bash
 # Navigate to your service directory
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Start the container (if not running) - use drive.sh for automatic permission handling
 ./drive.sh up -d
 
 # Open the graphical interface
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 ```
 
 **Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec). This automatically handles permissions.
@@ -81,15 +81,15 @@ For command-line operations, here are all available commands:
 **All commands must be executed from the service directory:**
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet <command>
+cd drive/services/node0-infinite
+./drive.sh exec infinite <command>
 ```
 
 ## Initialize Node
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Advanced Operations"**
 3. Choose:
    - **"Initialize Node (Simple)"** - For full nodes (no validator keys needed)
@@ -104,8 +104,8 @@ cd drive/services/infinite-mainnet
 #### Simple Initialization
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-init
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-init
 ```
 
 **What it does:** Creates a new node with default configuration. Generates a random seed phrase automatically (not displayed) and downloads the official genesis file from the network repository.
@@ -128,10 +128,10 @@ cd drive/services/infinite-mainnet
 #### Recovery Mode (Required for Validator Nodes)
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec -it infinite-mainnet node-init --recover
+cd drive/services/node0-infinite
+docker compose exec infinite node-init --recover
 # or
-./drive.sh exec -it infinite-mainnet node-init -r
+docker compose exec infinite node-init -r
 ```
 
 **What it does:** Initializes the node using an existing seed phrase. Prompts you to enter your 12 or 24-word mnemonic phrase to recover your keys.
@@ -160,73 +160,16 @@ If you're setting up a **validator node**, you **MUST** add keys to your keyring
 
 ### Using Graphical Interface (Easiest)
 
-**Step-by-Step Guide:**
-
-1. **Open the interface:**
-   ```bash
-   ./drive.sh exec infinite-mainnet node-ui
-   ```
-
-2. **Navigate to "Key Management"** from the main menu
-
-3. **Choose the appropriate option based on your situation:**
-   
-   **Option A: Generate and Save Key** (if starting fresh)
-   - Use this if you don't have a key yet
-   - The system will generate a new cryptographic key
-   - **⚠️ CRITICAL:** The system will display your **seed phrase (12 or 24 words)**
-   - **You MUST save this seed phrase immediately and securely**
-   - The key will be saved to your keyring automatically
-   
-   **Option B: Add Existing Key from Seed Phrase** (if you already have keys)
-   - Use this if you already have a seed phrase from a previous setup
-   - You'll be prompted to enter your existing seed phrase
-   - The key will be added to your keyring
-   
-   **Option C: Generate Key (Dry-Run)** (for reference only)
-   - This option generates a key and shows the seed phrase **without saving it to the keyring**
-   - Use this only if you want to see what a seed phrase looks like, or if you prefer to manage keys externally
-   - **Note:** If you use this option, you'll need to manually add the key later using "Add Existing Key from Seed Phrase"
-   - **Not recommended** for most users - use "Generate and Save Key" instead
-
-4. **After adding your key:**
-   - You can verify it was saved by selecting "List All Keys"
-   - **Next step:** Navigate back to the main menu (press Esc or select "Back")
-   - Then proceed to **"Advanced Operations"** → **"Initialize with Recovery (Validator)"** to initialize your node
-   - **Alternatively:** You can return to the [Quick Start Guide](../quick-start.md) and continue from Step 5 to follow the complete initialization process
-
-**⚠️ CRITICAL SECURITY REMINDER - Seed Phrase Backup:**
-
-Your seed phrase is the **ONLY** way to recover your validator keys and access your validator. Follow these security practices:
-
-- **✅ DO:**
-  - Write it down on paper and store it in a secure physical location (safe, safety deposit box, etc.)
-  - Use a metal backup solution for long-term durability
-  - Store it in encrypted digital storage if you must keep a digital copy
-  - Make multiple secure backups in different locations
-  - Verify your backup is correct before proceeding
-
-- **❌ DON'T:**
-  - Store it in plain text on digital devices (computers, phones, cloud storage without encryption)
-  - Share it with anyone - not even support staff or "helpers"
-  - Take screenshots or photos of it
-  - Store it in email or messaging apps
-  - Write it in easily accessible locations
-
-**Remember:** You will need this seed phrase when:
-- Initializing your node in recovery mode (required for validator nodes)
-- Creating your validator
-- Recovering your validator if you lose access
-- Signing transactions and blocks
-
-### Other Key Management Operations
-
-The interface also provides these options for managing your keys:
-
-- **List All Keys** - View all keys currently in your keyring
-- **Show Key Details** - Display detailed information about a specific key
-- **Delete Key** - Remove a key from your keyring (use with caution)
-- **Reset Keyring Password** - Change the password that protects your keyring
+1. Open the interface: `docker compose exec infinite node-ui`
+2. Navigate to **"Key Management"**
+3. Choose from available options:
+   - Generate Key (Dry-Run - Recommended)
+   - Generate and Save Key
+   - Add Existing Key from Seed Phrase
+   - List All Keys
+   - Show Key Details
+   - Delete Key
+   - Reset Keyring Password
 
 The interface guides you through each operation with clear prompts and explanations.
 
@@ -240,37 +183,40 @@ The `node-keys` command provides tools for managing cryptographic keys for your 
 **Quick Reference:**
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
-# Create and save key directly
-./drive.sh exec -it infinite-mainnet node-keys create my-validator
+# Generate key without saving (recommended)
+docker compose exec infinite node-keys create my-validator --dry-run
+
+# Generate and save key directly
+docker compose exec -it node0-infinite node-keys create my-validator
 
 # Add existing key from seed phrase
-./drive.sh exec -it infinite-mainnet node-keys add my-validator
+./drive.sh exec -it node0-infinite node-keys add my-validator
 
 # List all keys
-./drive.sh exec infinite-mainnet node-keys list
+./drive.sh exec infinite node-keys list
 
 # Show key details
-./drive.sh exec infinite-mainnet node-keys show my-validator
+./drive.sh exec infinite node-keys show my-validator
 
 # Delete key
-./drive.sh exec infinite-mainnet node-keys delete my-validator --yes
+./drive.sh exec infinite node-keys delete my-validator --yes
 ```
 
 ## Start Node
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Start Node"**
 3. The interface will show the startup process and confirm when the node is running
 
 ### Using Command Line
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-start
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-start
 ```
 
 **What it does:** Starts the blockchain node as a background daemon process. The node runs continuously until stopped manually.
@@ -295,15 +241,15 @@ cd drive/services/infinite-mainnet
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Stop Node"**
 3. Confirm the operation
 
 ### Using Command Line
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-stop
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-stop
 ```
 
 **What it does:** Gracefully stops the running node process. Sends a termination signal (SIGTERM) and waits for the process to shut down cleanly.
@@ -321,14 +267,14 @@ cd drive/services/infinite-mainnet
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Monitoring"** → **"Node Process Status"**
 
 ### Using Command Line
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-process-status
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-process-status
 ```
 
 **What it does:** Verifies if the node process is currently running and displays process information.
@@ -375,7 +321,7 @@ cd drive/services/infinite-mainnet
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Monitoring"** → **"View Logs"** or **"Follow Logs"**
 
 ### Using Command Line
@@ -383,14 +329,14 @@ cd drive/services/infinite-mainnet
 #### Last N Lines
 
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Last 50 lines (default)
-./drive.sh exec infinite-mainnet node-logs
+./drive.sh exec infinite node-logs
 
 # Last N lines (specify number)
-./drive.sh exec infinite-mainnet node-logs 100
-./drive.sh exec infinite-mainnet node-logs 200
+./drive.sh exec infinite node-logs 100
+./drive.sh exec infinite node-logs 200
 ```
 
 **What it does:** Displays the last N lines from the node log file (`/var/log/node/node.log`).
@@ -405,10 +351,10 @@ cd drive/services/infinite-mainnet
 #### Follow Logs in Real-Time
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-logs -f
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-logs -f
 # or
-./drive.sh exec infinite-mainnet node-logs --follow
+./drive.sh exec infinite node-logs --follow
 ```
 
 **What it does:** Streams log entries in real-time as they're written to the log file (similar to `tail -f`).
@@ -420,8 +366,8 @@ cd drive/services/infinite-mainnet
 ## Interactive Graphical Interface
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-ui
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-ui
 ```
 
 **What it does:** Launches an interactive graphical menu interface (TUI - Text User Interface) that provides easy access to all node operations through a menu-driven interface.
@@ -451,8 +397,8 @@ cd drive/services/infinite-mainnet
 - When you want quick access to all operations in one place
 
 **Example workflow:**
-1. Launch interface: `./drive.sh exec infinite-mainnet node-ui`
-2. Navigate to "Key Management" → "Generate and Save Key" or "Add Existing Key from Seed Phrase"
+1. Launch interface: `docker compose exec infinite node-ui`
+2. Navigate to "Key Management" → "Generate Key (Dry-Run)"
 3. Follow prompts to create a key
 4. Return to main menu and navigate to "Advanced Operations" → "Initialize with Recovery"
 5. Complete initialization through the interface
@@ -461,14 +407,14 @@ cd drive/services/infinite-mainnet
 
 ### Using Graphical Interface
 
-1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Help & Documentation"**
 
 ### Using Command Line
 
 ```bash
-cd drive/services/infinite-mainnet
-./drive.sh exec infinite-mainnet node-help
+cd drive/services/node0-infinite
+./drive.sh exec infinite node-help
 ```
 
 **What it does:** Displays a summary of all available node commands, their locations, and usage examples.
@@ -484,30 +430,30 @@ cd drive/services/infinite-mainnet
 ### Daily Operations
 
 **Using Graphical Interface (Easiest):**
-1. Open interface: `./drive.sh exec infinite-mainnet node-ui`
+1. Open interface: `./drive.sh exec infinite node-ui`
 2. Use "Node Monitoring" to check status and view logs
 3. Use "Node Operations" to start/stop/restart
 
 **Using Command Line:**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
 # Check if node is running
-./drive.sh exec infinite-mainnet node-process-status
+./drive.sh exec infinite node-process-status
 
 # View recent logs
-./drive.sh exec infinite-mainnet node-logs 50
+./drive.sh exec infinite node-logs 50
 
 # Restart node if needed
-./drive.sh exec infinite-mainnet node-stop
-./drive.sh exec infinite-mainnet node-start
+./drive.sh exec infinite node-stop
+./drive.sh exec infinite node-start
 ```
 
 ### Validator Setup
 
 **Using Graphical Interface (Easiest):**
-1. Open interface: `./drive.sh exec infinite-mainnet node-ui`
-2. Navigate to "Key Management" → "Generate and Save Key" (or "Add Existing Key from Seed Phrase" if you already have keys)
+1. Open interface: `docker compose exec infinite node-ui`
+2. Navigate to "Key Management" → "Generate Key (Dry-Run - Recommended)"
 3. Save the seed phrase displayed
 4. Navigate to "Advanced Operations" → "Initialize with Recovery (Validator)"
 5. Enter the seed phrase when prompted
@@ -515,19 +461,19 @@ cd drive/services/infinite-mainnet
 
 **Using Command Line:**
 ```bash
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 
-# 1. Create key and add to keyring (if starting fresh)
-./drive.sh exec -it infinite-mainnet node-keys create validator-main
-
-# OR add existing key from seed phrase (if you already have keys)
-./drive.sh exec -it infinite-mainnet node-keys add validator-main
+# 1. Generate key (dry-run recommended - back up seed phrase yourself)
+docker compose exec infinite node-keys create validator-main --dry-run
 
 # 2. Initialize with recovery (enter seed phrase when prompted)
-./drive.sh exec -it infinite-mainnet node-init --recover
+./drive.sh exec -it node0-infinite node-init --recover
 
-# 3. Start node
-./drive.sh exec infinite-mainnet node-start
+# 3. (Optional) Add key to keyring for validator operations
+docker compose exec -it node0-infinite node-keys add validator-main
+
+# 4. Start node
+docker compose exec infinite node-start
 ```
 
 ## Working with Multiple Services
@@ -536,14 +482,24 @@ Each service in Drive is independent. You can run commands for different service
 
 ```bash
 # Mainnet node
-cd drive/services/infinite-mainnet
+cd drive/services/node0-infinite
 ./drive.sh up -d
-./drive.sh exec infinite-mainnet node-ui
+./drive.sh exec infinite node-ui
 
 # Testnet node (in another terminal)
-cd drive/services/infinite-testnet
+cd drive/services/node1-infinite-testnet
 ./drive.sh up -d
-./drive.sh exec infinite-testnet node-ui
+docker compose exec infinite-testnet node-ui
+
+# Creative Network node
+cd drive/services/node2-infinite-creative
+./drive.sh up -d
+docker compose exec infinite-creative node-ui
+
+# QOM Network node
+cd drive/services/node3-qom
+./drive.sh up -d
+docker compose exec qom node-ui
 ```
 
 **Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
@@ -551,8 +507,12 @@ cd drive/services/infinite-testnet
 Each service maintains its own:
 - Container name
 - Persistent data directory
-- Configuration
-- Environment variables
+- Configuration (ports, environment variables)
+- Network settings
+
+**Configuration Reference:**
+- **Port Configuration:** See [`config/ports/services/`](../../config/ports/services/) for service-specific port configurations
+- **Environment Variables:** See [`config/environment/reference.md`](../../config/environment/reference.md) for all available variables
 
 ## Tips
 
