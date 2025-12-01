@@ -14,7 +14,6 @@ This directory contains all port configuration documentation and service-specifi
 - **[node1-infinite-testnet.md](./services/node1-infinite-testnet.md)** - Infinite Testnet (Service #1)
 - **[node2-infinite-creative.md](./services/node2-infinite-creative.md)** - Creative Network (Service #2)
 - **[node3-qom.md](./services/node3-qom.md)** - QOM Network (Service #3)
-- **[service4-nginx.md](./services/service4-nginx.md)** - Nginx Web Server (Service #4) ⚠️ **Exception:** uses standard ports 80/443
 
 ## Quick Start
 

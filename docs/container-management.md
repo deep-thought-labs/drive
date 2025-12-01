@@ -476,11 +476,6 @@ docker compose exec infinite-creative node-ui
 cd drive/services/node3-qom
 ./drive.sh up -d
 docker compose exec qom node-ui
-
-# Service 5: Nginx Web Server
-cd drive/services/service4-nginx
-./drive.sh up -d
-# Access at http://localhost (port 80) or https://localhost (port 443)
 ```
 
 Each service maintains its own:

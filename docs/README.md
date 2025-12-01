@@ -26,13 +26,6 @@ Complete user guide for managing infrastructure services with Drive. This docume
   - Viewing container logs
   - Data persistence
 
-- **[Nginx Web Server](nginx-service.md)** - Complete guide to the Nginx web server service
-  - Starting and configuring the web server
-  - Setting up virtual hosts
-  - HTTPS/SSL configuration
-  - Reverse proxy setup
-  - Troubleshooting common issues
-
 - **[Configuration Reference](../config/)** - Complete configuration documentation
   - [Environment Variables](../config/environment/reference.md) - All available environment variables
   - [Port Allocation Strategy](../config/ports/strategy.md) - Port allocation logic and strategy
@@ -73,8 +66,7 @@ drive/
 │   │   └── persistent-data/     # Service data (git-ignored)
 │   ├── node1-infinite-testnet/ # Infinite Testnet (Service #1)
 │   ├── node2-infinite-creative/ # Creative Network (Service #2)
-│   ├── node3-qom/               # QOM Network (Service #3)
-│   └── service4-nginx/         # Nginx Web Server (Service #4) ⚠️ Exception: uses standard ports 80/443
+│   └── node3-qom/               # QOM Network (Service #3)
 └── config/                      # Configuration documentation
     ├── environment/             # Environment variables documentation
     │   ├── reference.md         # Complete environment variables reference
