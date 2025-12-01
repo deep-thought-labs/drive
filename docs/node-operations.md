@@ -16,21 +16,47 @@ cd drive/services/node0-infinite
 ./drive.sh up -d
 
 # Open the graphical interface
-docker compose exec infinite node-ui
+./drive.sh exec infinite node-ui
 ```
 
-**Note:** Use `./drive.sh` for container management commands (up, down, ps, etc.) to automatically handle permissions. Use `docker compose exec` for commands inside the container.
+**Note:** Use `./drive.sh` for all commands - both container management (up, down, ps, etc.) and commands inside the container (exec). This automatically handles permissions.
 
-### What You Can Do in the Interface
+### Interface Structure and Navigation
 
-The graphical interface provides access to all operations through visual menus:
+The graphical interface is organized into **submenus** that you can navigate by selecting options with arrow keys and Enter. Here's how the interface is structured:
 
-- **Key Management** - Create, list, show, delete keys
-- **Node Operations** - Start, stop, restart the node
-- **Advanced Operations** - Initialize node, validate genesis, clean data
-- **Node Monitoring** - View logs, check status, network diagnosis, system information
+**Main Menu Options:**
 
-**All operations are self-descriptive** - each menu option explains what it does, making it perfect for beginners.
+1. **Key Management** (Submenu)
+   - Create, list, show, or delete cryptographic keys
+   - Generate and save new keys
+   - Add existing keys from seed phrase
+   - Manage your keyring
+
+2. **Node Operations** (Submenu)
+   - **Essential operations:** Start, stop, restart the node
+   - Quick access to the most common node operations
+
+3. **Advanced Operations** (Submenu)
+   - **Initialize Node** - First-time node setup (simple mode for full nodes)
+   - **Initialize with Recovery (Validator)** - Required for validator nodes (uses seed phrase)
+   - **Delete Node Data** - Remove all node data to start fresh
+   - Other advanced configuration options
+
+4. **Node Monitoring** (Submenu)
+   - **Node Status** - Check if the node process is running
+   - **View Logs** - See the last N lines of logs
+   - **Follow Logs** - Real-time log streaming
+   - Network diagnosis and system information
+
+**How to Navigate:**
+- Use **arrow keys (↑↓)** to move between options
+- Press **Enter** to select an option and enter a submenu
+- Press **Esc** or select "Back" to return to the previous menu
+- Each submenu has a "Back" option to return to the main menu
+- You can navigate freely between submenus as needed
+
+**Tip:** Don't worry about getting lost - you can always navigate back to the main menu using the "Back" option or Esc key.
 
 ## Available Commands
 
@@ -56,21 +82,21 @@ For command-line operations, here are all available commands:
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite <command>
+./drive.sh exec infinite <command>
 ```
 
 ## Initialize Node
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Advanced Operations"**
 3. Choose:
    - **"Initialize Node (Simple)"** - For full nodes (no validator keys needed)
-   - **"Initialize with Recovery (Validator)"** - For validator nodes (requires seed phrase)
+   - **"Initialize with Recovery (Validator)"** - **Required for validator nodes** (requires seed phrase)
 4. Follow the interactive prompts:
    - Enter a moniker (node name) when requested
-   - If using recovery mode, enter your seed phrase
+   - If using recovery mode (required for validator nodes), enter your seed phrase
    - Confirm any warnings about random keys (if using simple mode)
 
 ### Using Command Line
@@ -79,7 +105,7 @@ docker compose exec infinite <command>
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-init
+./drive.sh exec infinite node-init
 ```
 
 **What it does:** Creates a new node with default configuration. Generates a random seed phrase automatically (not displayed) and downloads the official genesis file from the network repository.
@@ -99,7 +125,7 @@ docker compose exec infinite node-init
 
 **Note:** If the node is already initialized, the command will show an error. To reinitialize, you must delete the data directory first.
 
-#### Recovery Mode (For Validators)
+#### Recovery Mode (Required for Validator Nodes)
 
 ```bash
 cd drive/services/node0-infinite
@@ -110,7 +136,7 @@ docker compose exec infinite node-init -r
 
 **What it does:** Initializes the node using an existing seed phrase. Prompts you to enter your 12 or 24-word mnemonic phrase to recover your keys.
 
-**When to use:** Setting up a validator node with existing keys, or restoring a node from a backup seed phrase.
+**When to use:** **Required for validator nodes** - you must use recovery mode to initialize a validator node with your seed phrase. Also used for restoring a node from a backup seed phrase.
 
 **Expected output:**
 - Prompt: `Enter your bip39 mnemonic`
@@ -121,7 +147,16 @@ docker compose exec infinite node-init -r
 
 ## Key Management
 
-> **📖 Complete Key Management Guide:** For comprehensive documentation on generating, backing up, and managing keys, see the [Key Management](key-management.md) guide.
+This section covers all aspects of key management for your Infinite Drive node, including creating keys, backing up seed phrases, and managing your keyring.
+
+**⚠️ IMPORTANT - Read Before Proceeding:**
+
+If you're setting up a **validator node**, you **MUST** add keys to your keyring **BEFORE** initializing the node. The seed phrase (12 or 24 words) you generate or add will be used to:
+- Initialize your node in recovery mode (required for validator nodes)
+- Create and operate your validator
+- Sign blocks and transactions
+
+**Both options (Generate and Save Key, or Add Existing Key) will save the key to your keyring** - the system needs the key stored to use it during initialization and validator operations.
 
 ### Using Graphical Interface (Easiest)
 
@@ -157,23 +192,23 @@ docker compose exec infinite node-keys create my-validator --dry-run
 docker compose exec -it node0-infinite node-keys create my-validator
 
 # Add existing key from seed phrase
-docker compose exec -it node0-infinite node-keys add my-validator
+./drive.sh exec -it node0-infinite node-keys add my-validator
 
 # List all keys
-docker compose exec infinite node-keys list
+./drive.sh exec infinite node-keys list
 
 # Show key details
-docker compose exec infinite node-keys show my-validator
+./drive.sh exec infinite node-keys show my-validator
 
 # Delete key
-docker compose exec infinite node-keys delete my-validator --yes
+./drive.sh exec infinite node-keys delete my-validator --yes
 ```
 
 ## Start Node
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Start Node"**
 3. The interface will show the startup process and confirm when the node is running
 
@@ -181,7 +216,7 @@ docker compose exec infinite node-keys delete my-validator --yes
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-start
+./drive.sh exec infinite node-start
 ```
 
 **What it does:** Starts the blockchain node as a background daemon process. The node runs continuously until stopped manually.
@@ -206,7 +241,7 @@ docker compose exec infinite node-start
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Operations"** → **"Stop Node"**
 3. Confirm the operation
 
@@ -214,7 +249,7 @@ docker compose exec infinite node-start
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-stop
+./drive.sh exec infinite node-stop
 ```
 
 **What it does:** Gracefully stops the running node process. Sends a termination signal (SIGTERM) and waits for the process to shut down cleanly.
@@ -232,14 +267,14 @@ docker compose exec infinite node-stop
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Monitoring"** → **"Node Process Status"**
 
 ### Using Command Line
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-process-status
+./drive.sh exec infinite node-process-status
 ```
 
 **What it does:** Verifies if the node process is currently running and displays process information.
@@ -250,13 +285,43 @@ docker compose exec infinite node-process-status
 
 **When to use:** Quick verification that the node process is active, especially useful for troubleshooting or monitoring scripts.
 
-**Note:** This checks the process status, not the blockchain sync status. Use `infinited status` to check sync status.
+**Note:** This checks the process status, not the blockchain sync status. See the "Check Sync Status" section below for information on verifying blockchain synchronization.
+
+## Check Sync Status
+
+After starting your node, it will begin synchronizing with the blockchain network. You need to verify that synchronization is complete before proceeding with validator operations.
+
+### Using Graphical Interface (Easiest)
+
+1. Open the interface: `./drive.sh exec infinite-mainnet node-ui`
+2. Navigate to **"Node Monitoring"** → **"Node Status"** or **"View Logs"**
+3. Look for sync progress indicators in the logs
+
+### Using Command Line
+
+```bash
+cd drive/services/infinite-mainnet
+
+# Check sync status
+./drive.sh exec infinite-mainnet infinited status
+```
+
+**What to look for:**
+- **`catching_up: false`** - Node is fully synchronized
+- **`catching_up: true`** - Node is still syncing (wait until it becomes `false`)
+- **`latest_block_height`** - Current block height the node has synced to
+- **`earliest_block_height`** - Earliest block the node has
+
+**When sync is complete:**
+- The node is ready for normal operations
+- For validator nodes, you can proceed with creating your validator on-chain
+- **Note:** Instructions for creating validators on-chain will be added to the documentation in a future update
 
 ## View Logs
 
 ### Using Graphical Interface (Easiest)
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Node Monitoring"** → **"View Logs"** or **"Follow Logs"**
 
 ### Using Command Line
@@ -267,11 +332,11 @@ docker compose exec infinite node-process-status
 cd drive/services/node0-infinite
 
 # Last 50 lines (default)
-docker compose exec infinite node-logs
+./drive.sh exec infinite node-logs
 
 # Last N lines (specify number)
-docker compose exec infinite node-logs 100
-docker compose exec infinite node-logs 200
+./drive.sh exec infinite node-logs 100
+./drive.sh exec infinite node-logs 200
 ```
 
 **What it does:** Displays the last N lines from the node log file (`/var/log/node/node.log`).
@@ -287,9 +352,9 @@ docker compose exec infinite node-logs 200
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-logs -f
+./drive.sh exec infinite node-logs -f
 # or
-docker compose exec infinite node-logs --follow
+./drive.sh exec infinite node-logs --follow
 ```
 
 **What it does:** Streams log entries in real-time as they're written to the log file (similar to `tail -f`).
@@ -302,7 +367,7 @@ docker compose exec infinite node-logs --follow
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-ui
+./drive.sh exec infinite node-ui
 ```
 
 **What it does:** Launches an interactive graphical menu interface (TUI - Text User Interface) that provides easy access to all node operations through a menu-driven interface.
@@ -342,14 +407,14 @@ docker compose exec infinite node-ui
 
 ### Using Graphical Interface
 
-1. Open the interface: `docker compose exec infinite node-ui`
+1. Open the interface: `./drive.sh exec infinite node-ui`
 2. Navigate to **"Help & Documentation"**
 
 ### Using Command Line
 
 ```bash
 cd drive/services/node0-infinite
-docker compose exec infinite node-help
+./drive.sh exec infinite node-help
 ```
 
 **What it does:** Displays a summary of all available node commands, their locations, and usage examples.
@@ -365,7 +430,7 @@ docker compose exec infinite node-help
 ### Daily Operations
 
 **Using Graphical Interface (Easiest):**
-1. Open interface: `docker compose exec infinite node-ui`
+1. Open interface: `./drive.sh exec infinite node-ui`
 2. Use "Node Monitoring" to check status and view logs
 3. Use "Node Operations" to start/stop/restart
 
@@ -374,14 +439,14 @@ docker compose exec infinite node-help
 cd drive/services/node0-infinite
 
 # Check if node is running
-docker compose exec infinite node-process-status
+./drive.sh exec infinite node-process-status
 
 # View recent logs
-docker compose exec infinite node-logs 50
+./drive.sh exec infinite node-logs 50
 
 # Restart node if needed
-docker compose exec infinite node-stop
-docker compose exec infinite node-start
+./drive.sh exec infinite node-stop
+./drive.sh exec infinite node-start
 ```
 
 ### Validator Setup
@@ -402,7 +467,7 @@ cd drive/services/node0-infinite
 docker compose exec infinite node-keys create validator-main --dry-run
 
 # 2. Initialize with recovery (enter seed phrase when prompted)
-docker compose exec -it node0-infinite node-init --recover
+./drive.sh exec -it node0-infinite node-init --recover
 
 # 3. (Optional) Add key to keyring for validator operations
 docker compose exec -it node0-infinite node-keys add validator-main
@@ -419,7 +484,7 @@ Each service in Drive is independent. You can run commands for different service
 # Mainnet node
 cd drive/services/node0-infinite
 ./drive.sh up -d
-docker compose exec infinite node-ui
+./drive.sh exec infinite node-ui
 
 # Testnet node (in another terminal)
 cd drive/services/node1-infinite-testnet

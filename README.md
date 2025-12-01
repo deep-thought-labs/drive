@@ -4,7 +4,7 @@
 
 > _A cypherpunk nation in cyberspace. Powered by improbability._
 
-Drive is an open infrastructure management platform designed for **Infinite Improbability Chain** and beyond. Orchestrate blockchain nodes, services, and infrastructure with a unified interface. Part of the **Infinite Drive** ecosystem and **Project 42**. Developed by [Deep Thought Labs](https://deep-thought.computer). For information about **Infinite Improbability Chain**, see the [Infinite repository](https://github.com/deep-thought-labs/infinite).
+Drive is an open infrastructure management platform designed for **Infinite Improbability Chain** and beyond. Easily orchestrate blockchain nodes, services, and infrastructure with a unified interface. Part of the **Infinite Drive** ecosystem and **Project 42**, developed by [Deep Thought Labs](https://deep-thought.computer). Learn more at [infinitedrive.xyz](https://infinitedrive.xyz)
 
 ---
 
@@ -97,6 +97,11 @@ drive/
 ├── docs/                        # User documentation
 └── README.md                    # This file
 ```
+
+Each service directory contains:
+- `docker-compose.yml` - Service configuration
+- `drive.sh` - Container management wrapper script
+- `persistent-data/` - Persistent blockchain data (git-ignored)
 
 ---
 
@@ -247,19 +252,18 @@ Each service maintains its own:
 
 ## Architecture
 
-Drive is designed as an **open service orchestrator** that:
+Drive is designed as an **open service orchestrator** with the following characteristics:
 
-- **Isolates services** - Each service runs independently
-- **Manages resources** - Each service can have different resource limits
-- **Simplifies deployment** - Standard Docker Compose workflow with `drive.sh` wrapper for easy management
-- **Enables scaling** - Easy to add new services or duplicate existing ones
-- **Multi-blockchain ready** - Extensible architecture supports any blockchain or service
+- **Independent Services** - Each service runs in complete isolation with its own container, persistent data, network configuration, and environment variables
+- **Unified Management** - All services use the same `drive.sh` wrapper script for consistent container management
+- **Extensible** - Easy to add new services or duplicate existing ones; supports any blockchain or containerized application
+- **Persistent Storage** - Each service maintains its own `persistent-data/` directory (git-ignored) that survives container restarts
 
 ---
 
 ## Adding New Services
 
-Drive's open architecture allows you to add any blockchain node or service. To add a new service:
+To add a new service:
 
 1. Create a new directory under `drive/services/`
 2. Copy `docker-compose.yml` from an existing service as a template
@@ -267,26 +271,7 @@ Drive's open architecture allows you to add any blockchain node or service. To a
 4. Update the service name and container name to be unique
 5. Create a `persistent-data/` directory (will be git-ignored automatically)
 
-Whether it's another blockchain, a database, a web service, or any containerized application, Drive provides the same unified management interface.
-
-**Example structure:**
-```
-drive/services/my-new-service/
-├── docker-compose.yml
-└── persistent-data/
-    └── README.md
-```
-
----
-
-## Data Persistence
-
-Each service maintains its own `persistent-data/` directory that is:
-- **Git-ignored** - Data is not tracked in version control
-- **Service-specific** - Each service has isolated data
-- **Persistent** - Data survives container restarts
-
-The `persistent-data/` directory structure is automatically ignored by Git using the pattern `**/persistent-data/*` in `.gitignore`.
+Drive provides the same unified management interface for any blockchain, database, web service, or containerized application.
 
 ---
 
@@ -296,9 +281,7 @@ The `persistent-data/` directory structure is automatically ignored by Git using
 - **Lab**: [Deep Thought Labs](https://deep-thought.computer) - Research laboratory developing Infinite Drive
 - **X**: [@DeepThought_Lab](https://x.com/DeepThought_Lab)
 - **Telegram**: Deep Thought Labs
-- **Blockchain**: [Infinite Improbability Chain](https://github.com/deep-thought-labs/infinite) - Main repository
 - **Client**: [Drive](https://github.com/deep-thought-labs/drive) - Infrastructure management client (this repository)
-- **Docs**: [Getting Started with Infinite Drive](https://github.com/deep-thought-labs/infinite)
 
 ---
 
@@ -311,8 +294,6 @@ Drive is an open infrastructure management platform, designed for **Infinite Imp
 3. Ensure each service is self-contained
 4. Update this README when adding new service types
 
-For contributions to **Infinite Improbability Chain** itself, see the [Infinite repository](https://github.com/deep-thought-labs/infinite).
-
 ---
 
 ## License
@@ -323,7 +304,7 @@ Apache 2.0
 
 ## Support
 
-For issues, questions, or contributions, please refer to the [documentation](docs/quick-start.md) or open an issue in the repository.
+For issues, questions, or contributions, please refer to the [Quick Start Guide](docs/quick-start.md) or open an issue in the repository.
 
 ---
 
