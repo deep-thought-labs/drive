@@ -21,61 +21,6 @@ Drive is an open infrastructure management platform designed for **Infinite Impr
 
 ---
 
-## Quick Start
-
-### Prerequisites
-
-- Docker (20.10+)
-- Docker Compose (1.29+)
-
-**Important Note on Docker Permissions (Linux):**
-- You may need to add your user to the `docker` group to run Docker commands without `sudo`
-- The `drive.sh` script works with or without `sudo`, but Docker itself requires `sudo` if your user is not in the docker group
-- To configure: `sudo usermod -aG docker $USER` (then log out and log back in)
-- See [Quick Start Guide](docs/quick-start.md) for complete Docker installation instructions
-
-### Clone the Repository
-
-First, clone the Drive repository to your local machine:
-
-```bash
-git clone https://github.com/deep-thought-labs/drive.git
-cd drive
-```
-
-### Run a Node (Easiest Method)
-
-The easiest way to manage your node is through the built-in graphical interface:
-
-```bash
-cd services/node0-infinite
-./drive.sh up -d
-docker compose exec infinite node-ui
-```
-
-**Note:** 
-- Use `./drive.sh` instead of `docker compose` for container management commands (up, down, ps, etc.)
-- The script automatically handles permissions and works with or without `sudo`
-- **If Docker requires `sudo`** (user not in docker group), use `sudo ./drive.sh` instead
-- For commands inside the container (`exec`), use `docker compose exec` directly
-
-The graphical interface provides visual menus for all operations - no command memorization needed.
-
-**Full Guide** → [Quick Start](docs/quick-start.md)
-
-### Command Line (Advanced)
-
-```bash
-cd services/node0-infinite
-./drive.sh up -d
-docker compose exec infinite node-init
-docker compose exec infinite node-start
-```
-
-**Why use `./drive.sh`?** It automatically configures correct user permissions, preventing volume permission errors. See [Container Management](docs/container-management.md) for details.
-
----
-
 ## Project Structure
 
 ```
@@ -90,7 +35,6 @@ drive/
 │   │   ├── drive.sh
 │   │   └── persistent-data/
 │   └── [other-services]/       # Additional blockchains, services, and infrastructure
-├── docs/                        # User documentation
 └── README.md                    # This file
 ```
 
@@ -101,118 +45,12 @@ Each service directory contains:
 
 ---
 
-## Available Services
-
-### Infinite Mainnet
-
-Full blockchain node for **Infinite Improbability Chain** mainnet network.
-
-**Location:** `drive/services/node0-infinite/`
-
-**Quick Commands:**
-```bash
-cd services/node0-infinite
-./drive.sh up -d
-docker compose exec infinite node-ui
-```
-
-**Note:** Use `./drive.sh` for container management (up, down, ps, etc.) to automatically handle permissions.
-
-### Infinite Testnet
-
-Full blockchain node for **Infinite Improbability Chain** testnet network.
-
-**Location:** `drive/services/node1-infinite-testnet/`
-
-**Quick Commands:**
-```bash
-cd services/node1-infinite-testnet
-./drive.sh up -d
-docker compose exec infinite-testnet node-ui
-```
-
-### Infinite Creative Network
-
-Full blockchain node for **Infinite Improbability Chain** creative network.
-
-**Location:** `drive/services/node2-infinite-creative/`
-
-**Quick Commands:**
-```bash
-cd services/node2-infinite-creative
-./drive.sh up -d
-docker compose exec infinite-creative node-ui
-```
-
-### QOM Network
-
-Full blockchain node for **QOM Network**.
-
-**Location:** `drive/services/node3-qom/`
-
-**Quick Commands:**
-```bash
-cd services/node3-qom
-./drive.sh up -d
-docker compose exec qom node-ui
-```
-
-**Configuration:**
-- **Environment Variables:** See [`config/environment/reference.md`](config/environment/reference.md) for all available variables
-- **Port Configuration:** See [`config/ports/strategy.md`](config/ports/strategy.md) for port allocation and service-specific configurations
-
----
-
 ## Documentation
 
-**Start here:** [Quick Start Guide](docs/quick-start.md)
+Complete documentation for Drive is available in our dedicated documentation repository:
 
-**Full Documentation:**
-- [Quick Start](docs/quick-start.md) - Get started in 5 minutes
-- [Node Operations](docs/node-operations.md) - Complete guide to node commands
-- [Container Management](docs/container-management.md) - Container management with `drive.sh`
-- [Updating the System](docs/update-system.md) - How to update services and Docker images
-- [Configuration Reference](config/) - Complete configuration documentation
-  - [Environment Variables](config/environment/reference.md) - All available environment variables
-  - [Port Allocation Strategy](config/ports/strategy.md) - Port configuration and strategy
-  - [Port Reference Guide](config/ports/reference.md) - Detailed port descriptions
-  - [Service-Specific Configurations](config/ports/services/) - Individual service port configurations
-
----
-
-## Managing Multiple Services
-
-Each service is completely independent. Run multiple services simultaneously:
-
-```bash
-# Mainnet node
-cd services/node0-infinite
-./drive.sh up -d
-
-# Testnet node (in another terminal)
-cd services/node1-infinite-testnet
-./drive.sh up -d
-
-# Creative Network node
-cd services/node2-infinite-creative
-./drive.sh up -d
-
-# QOM Network node
-cd services/node3-qom
-./drive.sh up -d
-```
-
-**Note:** Each service has its own `drive.sh` script for easy container management with automatic permission handling.
-
-Each service maintains its own:
-- Container name
-- Persistent data directory
-- Network configuration (ports are automatically allocated based on service number)
-- Environment variables
-
-**Configuration Reference:**
-- **Port Configuration:** Each service's ports are documented in [`config/ports/services/`](config/ports/services/) - see the service-specific file for complete port mappings
-- **Environment Variables:** All available variables are documented in [`config/environment/reference.md`](config/environment/reference.md) - this is the complete reference for all configuration options
+- **📚 Documentation Site:** [docs.infinitedrive.xyz](https://docs.infinitedrive.xyz)
+- **📖 GitHub Repository:** [github.com/deep-thought-labs/drive-docs](https://github.com/deep-thought-labs/drive-docs)
 
 ---
 
@@ -227,38 +65,21 @@ Drive is designed as an **open service orchestrator** with the following charact
 
 ---
 
-## Adding New Services
-
-To add a new service:
-
-1. Create a new directory under `drive/services/`
-2. Copy `docker-compose.yml` from an existing service as a template
-3. Modify environment variables and configuration as needed
-4. Update the service name and container name to be unique
-5. Create a `persistent-data/` directory (will be git-ignored automatically)
-
-Drive provides the same unified management interface for any blockchain, database, web service, or containerized application.
-
----
-
 ## Community
 
 - **Project**: [infinitedrive.xyz](https://infinitedrive.xyz)
 - **Lab**: [Deep Thought Labs](https://deep-thought.computer) - Research laboratory developing Infinite Drive
 - **X**: [@DeepThought_Lab](https://x.com/DeepThought_Lab)
-- **Telegram**: Deep Thought Labs
+- **Telegram**: [Deep Thought Computer](https://t.me/+nt8ysid_-8VlMDVh)
 - **Client**: [Drive](https://github.com/deep-thought-labs/drive) - Infrastructure management client (this repository)
 
 ---
 
 ## Contributing
 
-Drive is an open infrastructure management platform, designed for **Infinite Improbability Chain** and extensible to any blockchain or service. Part of the **Infinite Drive** ecosystem and **Project 42**. When contributing:
+Drive is an open infrastructure management platform, designed for **Infinite Improbability Chain** and extensible to any blockchain or service. Part of the **Infinite Drive** ecosystem and **Project 42**.
 
-1. Follow the service structure conventions
-2. Document new services in the `docs/` directory
-3. Ensure each service is self-contained
-4. Update this README when adding new service types
+Join our Telegram channel to stay in touch with the development team and contribute to the project.
 
 ---
 
@@ -270,7 +91,7 @@ Apache 2.0
 
 ## Support
 
-For issues, questions, or contributions, please refer to the [Quick Start Guide](docs/quick-start.md) or open an issue in the repository.
+For issues, questions, or contributions, please refer to the [documentation](https://docs.infinitedrive.xyz) or open an issue in the repository.
 
 ---
 
