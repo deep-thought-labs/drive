@@ -29,6 +29,25 @@ if [ ! -f "docker-compose.yml" ]; then
     exit 1
 fi
 
+# Function to get the service name from docker-compose.yml
+# Returns the first service name found in the file
+get_service_name() {
+    # Try to use docker compose config if available (most reliable)
+    if $DOCKER_COMPOSE_CMD config --services 2>/dev/null | head -1; then
+        return 0
+    fi
+    
+    # Fallback: parse docker-compose.yml directly
+    # Look for the first service definition after "services:"
+    # Pattern: services: followed by service name on next line
+    if command -v awk > /dev/null 2>&1; then
+        awk '/^services:/ {getline; if ($0 ~ /^[[:space:]]*[a-zA-Z0-9_-]+:[[:space:]]*$/) {gsub(/[[:space:]:]/, "", $0); print $0; exit}}' docker-compose.yml 2>/dev/null
+    else
+        # Simple grep fallback (less reliable but works in most cases)
+        grep -A 1 "^services:" docker-compose.yml 2>/dev/null | grep -E "^[[:space:]]*[a-zA-Z0-9_-]+:" | head -1 | sed 's/[[:space:]:]//g' 2>/dev/null
+    fi
+}
+
 # Ensure persistent-data directory exists and has correct permissions
 # The container runs as user 'ubuntu' (UID 1000), so we need to ensure the directory
 # is accessible to UID 1000. We do this by:
@@ -58,6 +77,29 @@ else
     fi
 fi
 
+# Detect if user is calling a node-* command directly (without exec and service name)
+# If so, automatically prepend 'exec' and service name
+# Only do this if the first argument is NOT 'exec' (user hasn't already specified it)
+if [ -n "$1" ] && [ "$1" != "exec" ] && echo "$1" | grep -qE "^node-"; then
+    # User is calling a node-* command directly (e.g., ./drive.sh node-init)
+    # Get service name from docker-compose.yml
+    SERVICE_NAME=$(get_service_name)
+    
+    if [ -z "$SERVICE_NAME" ]; then
+        echo "❌ Error: Could not determine service name from docker-compose.yml"
+        echo "   Please use: ./drive.sh exec <service-name> $@"
+        exit 1
+    fi
+    
+    # Rebuild arguments: exec, service-name, then all original arguments
+    ORIGINAL_ARGS=("$@")
+    NEW_ARGS=("exec" "$SERVICE_NAME")
+    for arg in "${ORIGINAL_ARGS[@]}"; do
+        NEW_ARGS+=("$arg")
+    done
+    set -- "${NEW_ARGS[@]}"
+fi
+
 # Check if this is an 'up' command with -d flag (detached mode)
 SHOW_LOGS=false
 if [ "$1" = "up" ]; then
@@ -68,6 +110,112 @@ if [ "$1" = "up" ]; then
             break
         fi
     done
+fi
+
+# Check if this is an 'exec' command that requires interactive mode
+# Automatically add -it flag for commands that need user input
+if [ "$1" = "exec" ]; then
+    # Commands that ALWAYS require interactive mode
+    ALWAYS_INTERACTIVE_COMMANDS="node-ui"
+    
+    # Commands that require interactive mode for certain operations
+    # These commands may work without -it in some cases, but typically need it
+    INTERACTIVE_COMMANDS="node-init|node-keys"
+    
+    # Commands that require interactive mode only with specific flags
+    # node-logs requires -it only when using -f or --follow
+    CONDITIONAL_INTERACTIVE="node-update-genesis|node-clean-data"
+    
+    # Check if any interactive command is being executed
+    NEEDS_INTERACTIVE=false
+    HAS_IT_FLAG=false
+    
+    # Check if -it, -i, or --interactive flag is already present
+    for arg in "$@"; do
+        if [ "$arg" = "-it" ] || [ "$arg" = "-i" ] || [ "$arg" = "--interactive" ] || [ "$arg" = "-ti" ]; then
+            HAS_IT_FLAG=true
+            break
+        fi
+    done
+    
+    # If -it flag is not present, check if we need to add it
+    if [ "$HAS_IT_FLAG" = false ]; then
+        # Check each argument for interactive commands
+        for arg in "$@"; do
+            # Check for always interactive commands
+            if echo "$arg" | grep -qE "^($ALWAYS_INTERACTIVE_COMMANDS)$"; then
+                NEEDS_INTERACTIVE=true
+                break
+            fi
+            
+            # Check for interactive commands (node-init, node-keys)
+            if echo "$arg" | grep -qE "^($INTERACTIVE_COMMANDS)$"; then
+                NEEDS_INTERACTIVE=true
+                break
+            fi
+            
+            # Check for conditional interactive commands
+            # node-logs with -f or --follow
+            if echo "$arg" | grep -qE "^node-logs$"; then
+                # Check if next argument is -f or --follow
+                for next_arg in "$@"; do
+                    if [ "$next_arg" = "-f" ] || [ "$next_arg" = "--follow" ]; then
+                        NEEDS_INTERACTIVE=true
+                        break 2
+                    fi
+                done
+            fi
+            
+            # Check for node-update-genesis and node-clean-data
+            if echo "$arg" | grep -qE "^($CONDITIONAL_INTERACTIVE)$"; then
+                # These commands may prompt for confirmation, so add -it
+                NEEDS_INTERACTIVE=true
+                break
+            fi
+            
+            # Check for node-keys subcommands that require interactivity
+            # node-keys create, add, delete, reset-password require interactivity
+            if echo "$arg" | grep -qE "^node-keys$"; then
+                for next_arg in "$@"; do
+                    if [ "$next_arg" = "create" ] || [ "$next_arg" = "add" ] || \
+                       [ "$next_arg" = "delete" ] || [ "$next_arg" = "reset-password" ]; then
+                        NEEDS_INTERACTIVE=true
+                        break 2
+                    fi
+                done
+            fi
+            
+            # Check for node-init with --recover flag
+            if echo "$arg" | grep -qE "^node-init$"; then
+                for next_arg in "$@"; do
+                    if [ "$next_arg" = "--recover" ] || [ "$next_arg" = "-r" ]; then
+                        NEEDS_INTERACTIVE=true
+                        break 2
+                    fi
+                done
+                # node-init without arguments also needs interactivity (asks for moniker)
+                NEEDS_INTERACTIVE=true
+                break
+            fi
+        done
+        
+        # If interactive mode is needed, insert -it after 'exec'
+        if [ "$NEEDS_INTERACTIVE" = true ]; then
+            # Rebuild arguments with -it inserted after 'exec'
+            # Save all original arguments to an array
+            ORIGINAL_ARGS=("$@")
+            # Create new array starting with 'exec' and '-it'
+            NEW_ARGS=("exec" "-it")
+            # Add all remaining arguments (skip index 0 which is 'exec')
+            i=1
+            while [ $i -lt ${#ORIGINAL_ARGS[@]} ]; do
+                NEW_ARGS+=("${ORIGINAL_ARGS[$i]}")
+                i=$((i + 1))
+            done
+            # Replace current arguments with new array
+            set -- "${NEW_ARGS[@]}"
+        fi
+    fi
 fi
 
 # Execute docker-compose with all passed arguments
@@ -156,4 +304,3 @@ if [ "$SHOW_LOGS" = true ]; then
     # If we get here, logs command exited normally (shouldn't happen with -f, but handle it)
     cleanup_logs
 fi
-

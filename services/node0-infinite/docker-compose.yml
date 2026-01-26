@@ -1,7 +1,7 @@
 services:
   infinite:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:latest
+    image: deepthoughtlabs/infinite-drive:v0.1.12
     container_name: infinite
     restart: unless-stopped
 
