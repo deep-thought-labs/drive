@@ -304,3 +304,4 @@ if [ "$SHOW_LOGS" = true ]; then
     # If we get here, logs command exited normally (shouldn't happen with -f, but handle it)
     cleanup_logs
 fi
+
