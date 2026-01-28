@@ -1,7 +1,7 @@
 services:
   infinite-testnet:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:v0.1.13
+    image: deepthoughtlabs/infinite-drive:v0.1.14
     container_name: infinite-testnet
     restart: unless-stopped
 
