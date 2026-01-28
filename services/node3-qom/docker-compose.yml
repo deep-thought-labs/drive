@@ -1,7 +1,7 @@
 services:
   qom:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:v0.1.12
+    image: deepthoughtlabs/infinite-drive:v0.1.13
     container_name: qom
     restart: unless-stopped
 
@@ -54,6 +54,13 @@ services:
       NODE_ALT_BINARY_URL_AMD64: "https://github.com/WizardLatino/test-qom-node/releases/download/v1.0.1/qomd-linux-amd64"
       NODE_ALT_BINARY_NAME: "qomd"
       NODE_ALT_HOME: "/home/ubuntu/.qomd"
+
+      ##################################################################################
+      #                    Conditional Argument Flags                                 #
+      ##################################################################################
+      # Explicitly disable EVM Chain ID flag for QOM (qomd binary doesn't support it)
+      # Auto-detection would set this to false automatically, but we set it explicitly for clarity
+      NODE_FLAG_EVM_CHAIN_ID_ENABLED: "false"
 
     ### End environment variables
   ### End service qom
