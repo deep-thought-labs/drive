@@ -15,11 +15,9 @@
 
 set -uo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../scripts/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
 
 URL="${1:-}"
 TIMEOUT=10
@@ -32,33 +30,10 @@ PORT=""
 PATH_PART=""
 CHAIN_ID=""
 LATEST_BLOCK=""
+LATEST_BLOCK_TIME=""
 CATCHING_UP=""
-
-print_header() {
-    echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
-}
-
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-    ((PASSED_TESTS++)) || true
-    ((TOTAL_TESTS++)) || true
-}
-
-print_error() {
-    echo -e "${RED}✗${NC} $1"
-    ((FAILED_TESTS++)) || true
-    ((TOTAL_TESTS++)) || true
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
-}
+# 1 if user passed URL with scheme (https:// or http://), 0 if only hostname
+USER_SPECIFIED_PROTOCOL=0
 
 validate_usage() {
     if [ -z "$URL" ]; then
@@ -72,6 +47,7 @@ validate_usage() {
 normalize_url() {
     print_header "1. URL Normalization and Validation"
     ORIGINAL_URL="$URL"
+    url_has_scheme "$ORIGINAL_URL" && USER_SPECIFIED_PROTOCOL=1 || USER_SPECIFIED_PROTOCOL=0
 
     if [[ ! "$URL" =~ ^https?:// ]]; then
         print_info "URL without protocol detected, attempting to normalize..."
@@ -165,24 +141,6 @@ normalize_url() {
     fi
 }
 
-test_dns_resolution() {
-    print_header "2. DNS Resolution"
-    IP=""
-    command -v getent >/dev/null 2>&1 && IP=$(getent hosts "$HOST" 2>/dev/null | awk '{print $1}' | head -n1)
-    [ -z "$IP" ] && command -v host >/dev/null 2>&1 && IP=$(host "$HOST" 2>/dev/null | grep -E 'has address|has IPv4' | awk '{print $NF}' | head -n1)
-    [ -z "$IP" ] && command -v dig >/dev/null 2>&1 && IP=$(dig +short "$HOST" A 2>/dev/null | head -n1)
-    [ -z "$IP" ] && command -v nslookup >/dev/null 2>&1 && IP=$(nslookup "$HOST" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $2}' | head -n1)
-
-    if [ -n "$IP" ]; then
-        print_success "DNS resolved: $HOST -> $IP"
-    elif host "$HOST" >/dev/null 2>&1 || nslookup "$HOST" >/dev/null 2>&1; then
-        print_success "DNS resolved: $HOST"
-    else
-        print_error "Could not resolve DNS for: $HOST"
-        exit 1
-    fi
-}
-
 test_network_connectivity() {
     print_header "3. Network Connectivity"
     if [ -z "$PORT" ]; then
@@ -211,6 +169,7 @@ test_network_connectivity() {
 
 test_tendermint_status() {
     print_header "4. Tendermint RPC (/status)"
+    step_timer_start
     if [[ "$URL" == */ ]]; then
         STATUS_URL="${URL}status"
     else
@@ -218,18 +177,21 @@ test_tendermint_status() {
     fi
     if ! command -v curl >/dev/null 2>&1; then
         print_error "curl is required for this check"
+        step_timer_elapsed 4
         exit 1
     fi
 
     RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$STATUS_URL" 2>/dev/null)
     if [ "$RESPONSE" != "200" ]; then
         print_error "GET /status returned HTTP $RESPONSE (expected 200)"
+        step_timer_elapsed 4
         exit 1
     fi
 
     BODY=$(curl -s --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$STATUS_URL" 2>/dev/null)
     if ! echo "$BODY" | grep -q '"result"'; then
         print_error "Response does not look like Tendermint RPC (no result field)"
+        step_timer_elapsed 4
         exit 1
     fi
 
@@ -239,6 +201,8 @@ test_tendermint_status() {
     [ -z "$CHAIN_ID" ] && CHAIN_ID=$(echo "$BODY" | sed -n 's/.*"network"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
     LATEST_BLOCK=$(echo "$BODY" | grep -o '"latest_block_height":"[^"]*"' | head -n1 | sed 's/"latest_block_height":"\(.*\)"/\1/')
     [ -z "$LATEST_BLOCK" ] && LATEST_BLOCK=$(echo "$BODY" | sed -n 's/.*"latest_block_height"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
+    LATEST_BLOCK_TIME=$(echo "$BODY" | grep -o '"latest_block_time":"[^"]*"' | head -n1 | sed 's/"latest_block_time":"\(.*\)"/\1/')
+    [ -z "$LATEST_BLOCK_TIME" ] && LATEST_BLOCK_TIME=$(echo "$BODY" | sed -n 's/.*"latest_block_time"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
     CATCHING_UP=$(echo "$BODY" | grep -o '"catching_up":[^,}]*' | head -n1 | sed 's/"catching_up"://')
 
     if [ -n "$CHAIN_ID" ]; then
@@ -249,19 +213,13 @@ test_tendermint_status() {
     if [ -n "$LATEST_BLOCK" ]; then
         print_info "Latest block height: $LATEST_BLOCK"
     fi
+    if [ -n "$LATEST_BLOCK_TIME" ]; then
+        print_info "Latest block time: $LATEST_BLOCK_TIME"
+    fi
     if [ -n "$CATCHING_UP" ]; then
         print_info "Catching up: $CATCHING_UP"
     fi
-}
-
-print_credits() {
-    echo -e "\n${BLUE}───────────────────────────────────────────────────────────────${NC}"
-    echo -e "${BLUE}  Authorship & rights${NC}"
-    echo -e "${BLUE}  Copyright 2025, Deep Thought Labs.${NC}"
-    echo -e "${BLUE}  This tool is part of the Infinite Drive ecosystem (Project 42).${NC}"
-    echo -e "${BLUE}  Infinite Drive: https://infinitedrive.xyz  |  Docs: https://docs.infinitedrive.xyz${NC}"
-    echo -e "${BLUE}  Deep Thought Labs: https://deep-thought.computer${NC}"
-    echo -e "${BLUE}───────────────────────────────────────────────────────────────${NC}\n"
+    step_timer_elapsed 4
 }
 
 print_summary() {
@@ -269,6 +227,15 @@ print_summary() {
     echo -e "Total tests: ${BLUE}$TOTAL_TESTS${NC}"
     echo -e "Passed: ${GREEN}$PASSED_TESTS${NC}"
     echo -e "Failed: ${RED}$FAILED_TESTS${NC}"
+
+    if [ -n "$CHAIN_ID" ] || [ -n "$LATEST_BLOCK" ] || [ -n "$LATEST_BLOCK_TIME" ]; then
+        echo ""
+        print_info "Endpoint information (from Tendermint /status):"
+        [ -n "$CHAIN_ID" ]         && print_info "  Chain ID:           $CHAIN_ID"
+        [ -n "$LATEST_BLOCK" ]     && print_info "  Latest block height: $LATEST_BLOCK"
+        [ -n "$LATEST_BLOCK_TIME" ] && print_info "  Latest block time:   $LATEST_BLOCK_TIME"
+    fi
+
     if [ "$FAILED_TESTS" -eq 0 ]; then
         echo -e "\n${GREEN}✓ All validations passed. Cosmos RPC endpoint is suitable for use (e.g. Hermes rpc_addr).${NC}\n"
         print_credits

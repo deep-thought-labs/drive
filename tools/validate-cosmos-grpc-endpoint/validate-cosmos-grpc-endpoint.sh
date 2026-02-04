@@ -15,11 +15,9 @@
 
 set -uo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../scripts/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
 
 URL="${1:-}"
 TIMEOUT=10
@@ -29,32 +27,17 @@ FAILED_TESTS=0
 HOST=""
 PORT=""
 PROTOCOL=""
+# 1 if user passed URL with scheme (https:// or http://), 0 if only hostname (we may have inferred protocol)
+USER_SPECIFIED_PROTOCOL=0
 
-print_header() {
-    echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
-}
-
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-    ((PASSED_TESTS++)) || true
-    ((TOTAL_TESTS++)) || true
-}
-
-print_error() {
-    echo -e "${RED}✗${NC} $1"
-    ((FAILED_TESTS++)) || true
-    ((TOTAL_TESTS++)) || true
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
-}
+# Endpoint information from gRPC (GetNodeInfo + GetLatestBlock), shown in summary to confirm we reached the right chain
+GRPC_CHAIN_ID=""
+GRPC_NODE_VERSION=""
+GRPC_APP_NAME=""
+GRPC_LATEST_HEIGHT=""
+GRPC_LATEST_BLOCK_TIME=""
+# Set to 1 when step 5 was skipped because user specified no protocol and no port
+GRPC_STEP_SKIPPED_NO_PROTOCOL_PORT=0
 
 # Print install instructions for grpcurl (macOS and Ubuntu) when the tool is missing.
 print_grpcurl_install_hint() {
@@ -79,6 +62,7 @@ validate_usage() {
 normalize_url() {
     print_header "1. URL / Host:Port Normalization"
     ORIGINAL="$URL"
+    url_has_scheme "$ORIGINAL" && USER_SPECIFIED_PROTOCOL=1 || USER_SPECIFIED_PROTOCOL=0
 
     if [[ "$URL" =~ ^https?:// ]]; then
         if [[ "$URL" =~ ^(https?)://([^:/]+)(:([0-9]+))? ]]; then
@@ -128,24 +112,6 @@ normalize_url() {
     fi
 }
 
-test_dns_resolution() {
-    print_header "2. DNS Resolution"
-    IP=""
-    command -v getent >/dev/null 2>&1 && IP=$(getent hosts "$HOST" 2>/dev/null | awk '{print $1}' | head -n1)
-    [ -z "$IP" ] && command -v host >/dev/null 2>&1 && IP=$(host "$HOST" 2>/dev/null | grep -E 'has address|has IPv4' | awk '{print $NF}' | head -n1)
-    [ -z "$IP" ] && command -v dig >/dev/null 2>&1 && IP=$(dig +short "$HOST" A 2>/dev/null | head -n1)
-    [ -z "$IP" ] && command -v nslookup >/dev/null 2>&1 && IP=$(nslookup "$HOST" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $2}' | head -n1)
-
-    if [ -n "$IP" ]; then
-        print_success "DNS resolved: $HOST -> $IP"
-    elif host "$HOST" >/dev/null 2>&1 || nslookup "$HOST" >/dev/null 2>&1; then
-        print_success "DNS resolved: $HOST"
-    else
-        print_error "Could not resolve DNS for: $HOST"
-        exit 1
-    fi
-}
-
 test_grpc_connectivity() {
     print_header "3. gRPC Port Connectivity"
     if [ -z "$PORT" ]; then
@@ -163,6 +129,11 @@ test_grpc_connectivity() {
         fi
         if grpcurl -connect-timeout "$TIMEOUT" "$HOST:$PORT" list 2>/dev/null | head -n1 | grep -q .; then
             print_success "gRPC reachable on $HOST:$PORT (TLS; grpcurl list OK)"
+            return 0
+        fi
+        if grpcurl -insecure -connect-timeout "$TIMEOUT" "$HOST:$PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC reachable on $HOST:$PORT (TLS, -insecure; grpcurl list OK)"
+            print_warning "Certificate verification was skipped (-insecure); ensure the endpoint is trusted"
             return 0
         fi
         print_error "grpcurl could not reach gRPC on $HOST:$PORT (plaintext or TLS)"
@@ -206,6 +177,7 @@ test_ssl_certificate() {
         return 0
     fi
     print_header "4. SSL Certificate Validation"
+    step_timer_start
     if ! command -v openssl >/dev/null 2>&1; then
         print_warning "OpenSSL not available, skipping certificate validation"
         return 0
@@ -224,6 +196,7 @@ test_ssl_certificate() {
         else
             print_error "Could not validate SSL certificate"
         fi
+        step_timer_elapsed 4
         return 0
     fi
     CERT_INFO=$(echo "$SSL_OUTPUT" | openssl x509 -noout -dates -subject -issuer 2>/dev/null)
@@ -234,6 +207,7 @@ test_ssl_certificate() {
         else
             print_error "Could not validate SSL certificate"
         fi
+        step_timer_elapsed 4
         return 0
     fi
     print_success "SSL certificate valid and accessible"
@@ -257,6 +231,49 @@ test_ssl_certificate() {
             fi
         fi
     fi
+    step_timer_elapsed 4
+}
+
+###############################################################################
+# Fetch chain/node info from gRPC (GetNodeInfo) for summary display
+###############################################################################
+
+fetch_grpc_node_info() {
+    local mode="$1"
+    local grpc_host="$2"
+    local grpc_port="$3"
+    local node_info=""
+    if [ "$mode" = "plaintext" ]; then
+        node_info=$(grpcurl -plaintext -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetNodeInfo 2>/dev/null)
+    elif [ "$mode" = "tls_insecure" ]; then
+        node_info=$(grpcurl -insecure -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetNodeInfo 2>/dev/null)
+    else
+        node_info=$(grpcurl -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetNodeInfo 2>/dev/null)
+    fi
+    [ -z "$node_info" ] && return 0
+    # Parse JSON without jq: network (chain_id), version (tendermint/comet), application name
+    GRPC_CHAIN_ID=$(echo "$node_info" | tr -d '\n' | sed -n 's/.*"network"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+    GRPC_NODE_VERSION=$(echo "$node_info" | tr -d '\n' | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+    # application_version.name is usually the app binary (e.g. infinited); may appear after "application_version"
+    GRPC_APP_NAME=$(echo "$node_info" | tr -d '\n' | sed -n 's/.*"application_version"[^}]*"name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+    [ -z "$GRPC_APP_NAME" ] && GRPC_APP_NAME=$(echo "$node_info" | tr -d '\n' | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | tail -1 | sed 's/.*"\([^"]*\)"$/\1/')
+
+    # Get latest block height and time (GetLatestBlock)
+    local block_json=""
+    if [ "$mode" = "plaintext" ]; then
+        block_json=$(grpcurl -plaintext -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetLatestBlock 2>/dev/null)
+    elif [ "$mode" = "tls_insecure" ]; then
+        block_json=$(grpcurl -insecure -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetLatestBlock 2>/dev/null)
+    else
+        block_json=$(grpcurl -connect-timeout "$TIMEOUT" "$grpc_host:$grpc_port" cosmos.base.tendermint.v1beta1.Service/GetLatestBlock 2>/dev/null)
+    fi
+    if [ -n "$block_json" ]; then
+        GRPC_LATEST_HEIGHT=$(echo "$block_json" | tr -d '\n' | sed -n 's/.*"height"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+        [ -z "$GRPC_LATEST_HEIGHT" ] && GRPC_LATEST_HEIGHT=$(echo "$block_json" | tr -d '\n' | grep -o '"height":"[^"]*"' | head -1 | sed 's/"height":"\(.*\)"/\1/')
+        [ -z "$GRPC_LATEST_HEIGHT" ] && GRPC_LATEST_HEIGHT=$(echo "$block_json" | tr -d '\n' | sed -n 's/.*"height"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' | head -1)
+        GRPC_LATEST_BLOCK_TIME=$(echo "$block_json" | tr -d '\n' | sed -n 's/.*"time"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+        [ -z "$GRPC_LATEST_BLOCK_TIME" ] && GRPC_LATEST_BLOCK_TIME=$(echo "$block_json" | tr -d '\n' | grep -o '"time":"[^"]*"' | head -1 | sed 's/"time":"\(.*\)"/\1/')
+    fi
 }
 
 ###############################################################################
@@ -272,39 +289,75 @@ test_grpc_services() {
         return 0
     fi
 
-    # When no port was specified, PORT stays empty (we never assign a default to PORT).
-    # For this optional probe only we use a local GRPC_PORT to attempt connection (443 or 9090); the endpoint URL is not changed.
-    GRPC_PORT="$PORT"
-    if [ -z "$GRPC_PORT" ]; then
-        if [ "$PROTOCOL" = "https" ]; then
-            GRPC_PORT="443"
-            print_info "No port in URL; probe will try gRPC over TLS on 443 for this check only (endpoint remains without port)"
+    # When no port is specified we do not impose one. We only use a protocol default (443/80) for the probe when
+    # the user explicitly passed a scheme (https:// or http://); then the default is that scheme's standard port.
+    # When the user passed only hostname (no protocol, no port), we do not assume a port and skip the probe.
+    PORTS_TO_TRY=""
+    if [ -n "$PORT" ]; then
+        PORTS_TO_TRY="$PORT"
+    else
+        if [ "$USER_SPECIFIED_PROTOCOL" -eq 1 ]; then
+            PORTS_TO_TRY=$(protocol_default_port "$PROTOCOL")
+            print_info "No port in URL; probe will use protocol default $PORTS_TO_TRY for this check only (endpoint remains without port; server handles redirection)"
+            [ -z "$PORTS_TO_TRY" ] && print_info "No port in URL; skipping gRPC service probe (endpoint remains without port)" && return 0
         else
-            GRPC_PORT="9090"
-            print_info "No port in URL; probe will try gRPC plaintext on 9090 for this check only (endpoint remains without port)"
+            print_info "No port or protocol specified; skipping only this step (gRPC list/GetNodeInfo) so we do not assume a port. Endpoint remains as given; server handles redirection. Other steps (DNS, CORS, security headers) still run."
+            GRPC_STEP_SKIPPED_NO_PROTOCOL_PORT=1
+            print_incomplete_validation_hint "the gRPC service check (step 5)" "$HOST" "${HOST}:443 or ${HOST}:9090" "This run did not perform the full gRPC validation (step 5). For complete validation including chain info, re-run with:"
+            return 0
         fi
     fi
 
-    # Try plaintext first (common for Cosmos gRPC on 9090)
-    if grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
-        print_success "gRPC server responds (plaintext); services listed"
-        grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
-            [ -n "$svc" ] && print_info "  $svc"
-        done
-        return 0
-    fi
+    step_timer_start
+    for GRPC_PORT in $PORTS_TO_TRY; do
+        if [ -z "$PORT" ]; then
+            print_info "Trying $HOST:$GRPC_PORT (plaintext)..."
+        fi
+        # Try plaintext first (common for Cosmos gRPC on 9090)
+        if grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC server responds (plaintext) on $HOST:$GRPC_PORT; services listed"
+            grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
+                [ -n "$svc" ] && print_info "  $svc"
+            done
+            fetch_grpc_node_info "plaintext" "$HOST" "$GRPC_PORT"
+            step_timer_elapsed 5
+            return 0
+        fi
 
-    # Try TLS (no client cert)
-    if grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
-        print_success "gRPC server responds (TLS); services listed"
-        grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
-            [ -n "$svc" ] && print_info "  $svc"
-        done
-        return 0
-    fi
+        if [ -z "$PORT" ] && [ "$GRPC_PORT" = "443" ]; then
+            print_info "Trying $HOST:443 (TLS)..."
+        fi
+        # Try TLS (no client cert)
+        if grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC server responds (TLS) on $HOST:$GRPC_PORT; services listed"
+            grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
+                [ -n "$svc" ] && print_info "  $svc"
+            done
+            fetch_grpc_node_info "tls" "$HOST" "$GRPC_PORT"
+            step_timer_elapsed 5
+            return 0
+        fi
+
+        if [ -z "$PORT" ] && [ "$GRPC_PORT" = "443" ]; then
+            print_info "Trying $HOST:443 (TLS, -insecure)..."
+        fi
+        # Try TLS with -insecure (e.g. self-signed or cert validation failed)
+        if grpcurl -insecure -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC server responds (TLS, -insecure) on $HOST:$GRPC_PORT; services listed"
+            print_warning "Certificate verification was skipped (-insecure); ensure the endpoint is trusted"
+            grpcurl -insecure -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
+                [ -n "$svc" ] && print_info "  $svc"
+            done
+            fetch_grpc_node_info "tls_insecure" "$HOST" "$GRPC_PORT"
+            step_timer_elapsed 5
+            return 0
+        fi
+    done
+
+    step_timer_elapsed 5 " (no gRPC response)"
 
     if [ -z "$PORT" ]; then
-        print_warning "grpcurl could not list services on $HOST:$GRPC_PORT; endpoint may still work for Hermes if served elsewhere"
+        print_warning "grpcurl could not list services on $HOST (probe used protocol default port); endpoint may still work for Hermes if served elsewhere"
     else
         print_warning "Port is open but grpcurl could not list services (may be TLS or different protocol); endpoint may still work for Hermes"
     fi
@@ -384,21 +437,30 @@ test_security_headers() {
     fi
 }
 
-print_credits() {
-    echo -e "\n${BLUE}───────────────────────────────────────────────────────────────${NC}"
-    echo -e "${BLUE}  Authorship & rights${NC}"
-    echo -e "${BLUE}  Copyright 2025, Deep Thought Labs.${NC}"
-    echo -e "${BLUE}  This tool is part of the Infinite Drive ecosystem (Project 42).${NC}"
-    echo -e "${BLUE}  Infinite Drive: https://infinitedrive.xyz  |  Docs: https://docs.infinitedrive.xyz${NC}"
-    echo -e "${BLUE}  Deep Thought Labs: https://deep-thought.computer${NC}"
-    echo -e "${BLUE}───────────────────────────────────────────────────────────────${NC}\n"
-}
-
 print_summary() {
     print_header "Validation Summary"
     echo -e "Total tests: ${BLUE}$TOTAL_TESTS${NC}"
     echo -e "Passed: ${GREEN}$PASSED_TESTS${NC}"
     echo -e "Failed: ${RED}$FAILED_TESTS${NC}"
+
+    if [ -n "$GRPC_CHAIN_ID" ] || [ -n "$GRPC_NODE_VERSION" ] || [ -n "$GRPC_APP_NAME" ] || [ -n "$GRPC_LATEST_HEIGHT" ] || [ -n "$GRPC_LATEST_BLOCK_TIME" ]; then
+        echo ""
+        print_info "Endpoint information (from gRPC GetNodeInfo / GetLatestBlock):"
+        [ -n "$GRPC_CHAIN_ID" ]       && print_info "  Chain ID:            $GRPC_CHAIN_ID"
+        [ -n "$GRPC_NODE_VERSION" ]   && print_info "  Node version:       $GRPC_NODE_VERSION"
+        [ -n "$GRPC_APP_NAME" ]       && print_info "  App name:           $GRPC_APP_NAME"
+        [ -n "$GRPC_LATEST_HEIGHT" ]  && print_info "  Latest block height: $GRPC_LATEST_HEIGHT"
+        [ -n "$GRPC_LATEST_BLOCK_TIME" ] && print_info "  Latest block time:   $GRPC_LATEST_BLOCK_TIME"
+    else
+        echo ""
+        print_info "Endpoint information could not be retrieved (GetNodeInfo/GetLatestBlock failed or gRPC service check did not succeed)."
+    fi
+
+    if [ "${GRPC_STEP_SKIPPED_NO_PROTOCOL_PORT:-0}" -eq 1 ]; then
+        echo ""
+        print_incomplete_validation_hint "the gRPC service check (step 5)" "$HOST" "${HOST}:443 or ${HOST}:9090"
+    fi
+
     if [ "$FAILED_TESTS" -eq 0 ]; then
         echo -e "\n${GREEN}✓ All validations passed. Cosmos gRPC endpoint is suitable for use (e.g. Hermes grpc_addr).${NC}\n"
         print_credits

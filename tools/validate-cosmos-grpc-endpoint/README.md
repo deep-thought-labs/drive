@@ -10,7 +10,7 @@ Other endpoint types (EVM RPC, Tendermint RPC) have their own validators in this
 2. **DNS resolution** — Hostname resolves correctly.
 3. **gRPC port connectivity** — If **grpcurl** is installed, the script uses it to verify that the gRPC server responds (`grpcurl list`); this is the recommended check. If grpcurl is not available, a raw TCP probe (nc or bash /dev/tcp) is used as fallback; that can fail on some networks or firewalls even when gRPC works, so installing grpcurl is recommended.
 4. **SSL certificate (when HTTPS)** — If the URL uses HTTPS, the certificate is validated with OpenSSL (validity and expiration). Skipped for HTTP.
-5. **gRPC service list (optional)** — If `grpcurl` is installed, tries to list services (plaintext or TLS) to confirm a gRPC server is present.
+5. **gRPC service list (optional)** — If `grpcurl` is installed, tries to list services: plaintext, then TLS, then TLS with `-insecure` (e.g. when the certificate is self-signed or invalid). When **no port is specified**: if the user **did** specify a protocol (`https://` or `http://`), the script uses only that protocol’s default port (443 or 80) for this probe, so the endpoint URL remains without a port and the server handles the request on that default. If the user passed **only a hostname** (no protocol, no port), the script does **not** assume a port or protocol and **skips** the gRPC service check (endpoint remains as given; server handles redirection). When the server responds, it calls `GetNodeInfo` and `GetLatestBlock`; chain ID, node version, app name, latest block height, and block time are shown in the **validation summary**. If this information could not be retrieved, the summary states that explicitly.
 6. **CORS headers (optional)** — If the same host/port responds to HTTP OPTIONS or POST, CORS headers are reported. Many gRPC-only endpoints do not respond to HTTP; in that case the check is skipped and no failure is reported.
 7. **Security headers (optional)** — If the endpoint responds to HTTP, common security headers (e.g. X-Frame-Options, Strict-Transport-Security) are checked. Skipped when the endpoint is gRPC-only.
 
@@ -42,13 +42,13 @@ The script uses the following tools (when available):
 # Local or internal gRPC endpoint
 ./validate-cosmos-grpc-endpoint.sh localhost:9090
 
-# URL without port (no default port is added; server handles routing; some optional probes may contact 443 or 9090 only to attempt the check)
+# URL without port (no default port is added; server handles routing; optional probe uses only protocol default port 443 for HTTPS)
 ./validate-cosmos-grpc-endpoint.sh grpc.example.com
 ```
 
 ## Output
 
-The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the number of checks passed or failed.
+The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the number of checks passed or failed. When `grpcurl` is available and the gRPC server responds, the summary shows **endpoint information** from `GetNodeInfo` and `GetLatestBlock`: **Chain ID**, **node version** (Tendermint/CometBFT), **app name**, **latest block height**, and **latest block time**. If this information could not be retrieved, the summary reports that explicitly.
 
 ## Exit codes
 
@@ -59,10 +59,21 @@ The script uses color codes for readability (✓ green passed, ✗ red failed, �
 
 The script is compatible with Linux, macOS, BSD, and any Unix-like system with bash 4.0+.
 
+## gRPC and HTTPS / TLS
+
+Both usage patterns are valid in the Cosmos ecosystem:
+
+- **Plaintext on 9090** — Common for internal or trusted networks; no TLS.
+- **TLS on 443** — Common for public endpoints (e.g. `https://grpc.example.com`); the same hostname often serves gRPC over TLS on 443 behind a proxy or load balancer.
+
+Using **HTTPS in the URL** (e.g. `https://grpc.infinitedrive.xyz`) is correct when the service is actually offered on port 443 with TLS. When no port is specified, the script does not impose one: it uses only the **protocol default** (443 for HTTPS, 80 for HTTP) for the optional gRPC probe, so the server handles the request on its default port. If **OpenSSL reports "Could not validate SSL certificate"** but the gRPC service responds with `grpcurl -insecure`, the endpoint is working; the message indicates a certificate chain or SNI issue (e.g. self-signed, wrong hostname, or incomplete chain), not that HTTPS is wrong for gRPC.
+
 ## Notes
 
 - Default timeout is 10 seconds for connections.
-- **No default ports**: If no port is specified, the URL is left without a port so the server or load balancer can handle redirections; the optional gRPC probe may try a standard port for the check only (e.g. 9090 for plaintext gRPC).
+- **No default ports**: If no port is specified, the URL is left without a port so the **server** handles redirection. The script does not guess: for the optional gRPC probe it uses a port **only when the user explicitly passed a protocol** (`https://` or `http://`), and then only that protocol’s default (443 or 80). If the user passed **only a hostname** (no `https://`, no `http://`, no port), only the **gRPC service check** (step 5: list services, GetNodeInfo/GetLatestBlock) is skipped, so we do not assume a port. The rest of the script still runs: DNS resolution, optional CORS and security header checks (which may send HTTP/HTTPS requests to the host). To get gRPC validation and chain info with only a hostname, pass a protocol (e.g. `https://grpc.example.com`) so the script can use that protocol’s default port for the probe.
+- **TLS -insecure**: If TLS certificate validation fails, the script still tries `grpcurl -insecure` so the gRPC service can be validated (e.g. self-signed certs); a warning is shown when verification was skipped.
+- **Step timing**: Steps 4 (SSL) and 5 (gRPC service check) print **"Step N completed in Xs"** so you can see how long each step took and spot slow or failing connections.
 - **CORS and security headers**: These are checked only when the endpoint responds to HTTP (e.g. GET/OPTIONS). Pure gRPC servers often do not; the script then reports that these checks are not applicable and does not fail.
 
 ## Authorship and rights

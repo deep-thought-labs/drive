@@ -16,12 +16,9 @@
 set -uo pipefail
 # Don't use -e to allow error handling in functions
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../scripts/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
 
 # Variables
 URL="${1:-}"
@@ -39,37 +36,10 @@ PATH_PART=""
 CHAIN_ID=""
 NETWORK_ID=""
 BLOCK_NUMBER=""
+BLOCK_TIMESTAMP=""
 CLIENT_VERSION=""
-
-###############################################################################
-# Utility functions
-###############################################################################
-
-print_header() {
-    echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
-}
-
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-    ((PASSED_TESTS++))
-    ((TOTAL_TESTS++))
-}
-
-print_error() {
-    echo -e "${RED}✗${NC} $1"
-    ((FAILED_TESTS++))
-    ((TOTAL_TESTS++))
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
-}
+# 1 if user passed URL with scheme (https:// or http://), 0 if only hostname
+USER_SPECIFIED_PROTOCOL=0
 
 ###############################################################################
 # Parameter validation
@@ -90,9 +60,9 @@ validate_usage() {
 
 normalize_url() {
     print_header "1. URL Normalization and Validation"
-    
     ORIGINAL_URL="$URL"
-    
+    url_has_scheme "$ORIGINAL_URL" && USER_SPECIFIED_PROTOCOL=1 || USER_SPECIFIED_PROTOCOL=0
+
     # If URL doesn't have protocol, try to add it
     if [[ ! "$URL" =~ ^https?:// ]]; then
         print_info "URL without protocol detected, attempting to normalize..."
@@ -213,51 +183,6 @@ normalize_url() {
 }
 
 ###############################################################################
-# DNS validation
-###############################################################################
-
-test_dns_resolution() {
-    print_header "2. DNS Resolution"
-    
-    if command -v nslookup >/dev/null 2>&1 || command -v host >/dev/null 2>&1 || command -v dig >/dev/null 2>&1; then
-        # Try to resolve using different methods
-        IP=""
-        
-        # Method 1: getent (Linux)
-        if command -v getent >/dev/null 2>&1; then
-            IP=$(getent hosts "$HOST" 2>/dev/null | awk '{print $1}' | head -n1)
-        fi
-        
-        # Method 2: host (compatible with macOS and Linux)
-        if [ -z "$IP" ] && command -v host >/dev/null 2>&1; then
-            IP=$(host "$HOST" 2>/dev/null | grep -E 'has address|has IPv4 address' | awk '{print $NF}' | head -n1)
-        fi
-        
-        # Method 3: dig (compatible with macOS and Linux)
-        if [ -z "$IP" ] && command -v dig >/dev/null 2>&1; then
-            IP=$(dig +short "$HOST" A 2>/dev/null | head -n1)
-        fi
-        
-        # Method 4: nslookup (fallback)
-        if [ -z "$IP" ] && command -v nslookup >/dev/null 2>&1; then
-            IP=$(nslookup "$HOST" 2>/dev/null | grep -A1 "Name:" | grep "Address:" | awk '{print $2}' | head -n1)
-        fi
-        
-        # Verify if resolution was successful
-        if [ -n "$IP" ]; then
-            print_success "DNS resolved correctly: $HOST -> $IP"
-        elif host "$HOST" >/dev/null 2>&1 || nslookup "$HOST" >/dev/null 2>&1 || dig "$HOST" >/dev/null 2>&1; then
-            print_success "DNS resolved correctly: $HOST (IP not extracted)"
-        else
-            print_error "Could not resolve DNS for: $HOST"
-            exit 1
-        fi
-    else
-        print_warning "DNS tools not available, skipping test"
-    fi
-}
-
-###############################################################################
 # Network connectivity validation
 ###############################################################################
 
@@ -299,7 +224,7 @@ test_network_connectivity() {
 test_ssl_certificate() {
     if [ "$PROTOCOL" = "https" ]; then
         print_header "4. SSL Certificate Validation"
-        
+        step_timer_start
         if command -v openssl >/dev/null 2>&1; then
             # Build connection string based on whether port is present or not
             if [ -n "$PORT" ]; then
@@ -366,6 +291,7 @@ test_ssl_certificate() {
         else
             print_warning "OpenSSL not available, skipping certificate validation"
         fi
+        step_timer_elapsed 4
     else
         print_info "HTTP protocol (not HTTPS), skipping SSL validation"
     fi
@@ -377,7 +303,7 @@ test_ssl_certificate() {
 
 test_http_response() {
     print_header "5. HTTP/HTTPS Response"
-    
+    step_timer_start
     if command -v curl >/dev/null 2>&1; then
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$URL" 2>/dev/null || echo "000")
         
@@ -404,6 +330,7 @@ test_http_response() {
         if [ "$RESPONSE_TIME" != "0" ]; then
             print_info "Response time: ${RESPONSE_TIME}s"
         fi
+        step_timer_elapsed 5
     else
         print_warning "curl not available, skipping HTTP test"
     fi
@@ -415,7 +342,7 @@ test_http_response() {
 
 test_rpc_methods() {
     print_header "6. RPC Methods Validation"
-    
+    step_timer_start
     if command -v curl >/dev/null 2>&1; then
         # Test standard Ethereum/EVM JSON-RPC methods
         RPC_METHODS=("web3_clientVersion" "eth_blockNumber" "net_version" "eth_chainId")
@@ -515,6 +442,36 @@ EOF
                 print_info "  Client Version: $CLIENT_VERSION"
             fi
         fi
+
+        # Fetch latest block timestamp (eth_getBlockByNumber) for summary
+        if [ -n "$BLOCK_NUMBER" ]; then
+            BLOCK_REQUEST=$(cat <<EOF
+{
+    "jsonrpc": "2.0",
+    "method": "eth_getBlockByNumber",
+    "params": ["latest", false],
+    "id": 1
+}
+EOF
+)
+            BLOCK_RESPONSE=$(curl -s --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" \
+                -X POST -H "Content-Type: application/json" -d "$BLOCK_REQUEST" "$URL" 2>/dev/null)
+            if [ -n "$BLOCK_RESPONSE" ] && echo "$BLOCK_RESPONSE" | grep -q '"result"'; then
+                TS_HEX=$(echo "$BLOCK_RESPONSE" | grep -o '"timestamp":"0x[0-9a-fA-F]*"' | sed 's/"timestamp":"\(.*\)"/\1/')
+                if [ -n "$TS_HEX" ]; then
+                    TS_DEC=$(printf "%d" "$TS_HEX" 2>/dev/null)
+                    if [ -n "$TS_DEC" ]; then
+                        BLOCK_TIMESTAMP=$(date -r "$TS_DEC" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+                        [ -z "$BLOCK_TIMESTAMP" ] && BLOCK_TIMESTAMP=$(date -d "@$TS_DEC" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+                        [ -z "$BLOCK_TIMESTAMP" ] && BLOCK_TIMESTAMP="${TS_DEC} (unix)"
+                    fi
+                fi
+                if [ -n "$BLOCK_TIMESTAMP" ]; then
+                    print_info "  Latest block time: $BLOCK_TIMESTAMP"
+                fi
+            fi
+        fi
+        step_timer_elapsed 6
     else
         print_warning "curl not available, skipping RPC methods tests"
     fi
@@ -645,22 +602,35 @@ test_security_headers() {
 # Final summary
 ###############################################################################
 
-print_credits() {
-    echo -e "\n${BLUE}───────────────────────────────────────────────────────────────${NC}"
-    echo -e "${BLUE}  Authorship & rights${NC}"
-    echo -e "${BLUE}  Copyright 2025, Deep Thought Labs.${NC}"
-    echo -e "${BLUE}  This tool is part of the Infinite Drive ecosystem (Project 42).${NC}"
-    echo -e "${BLUE}  Infinite Drive: https://infinitedrive.xyz  |  Docs: https://docs.infinitedrive.xyz${NC}"
-    echo -e "${BLUE}  Deep Thought Labs: https://deep-thought.computer${NC}"
-    echo -e "${BLUE}───────────────────────────────────────────────────────────────${NC}\n"
-}
-
 print_summary() {
     print_header "Validation Summary"
     
     echo -e "Total tests: ${BLUE}$TOTAL_TESTS${NC}"
     echo -e "Passed tests: ${GREEN}$PASSED_TESTS${NC}"
     echo -e "Failed tests: ${RED}$FAILED_TESTS${NC}"
+
+    if [ -n "$CHAIN_ID" ] || [ -n "$BLOCK_NUMBER" ] || [ -n "$BLOCK_TIMESTAMP" ] || [ -n "$CLIENT_VERSION" ]; then
+        echo ""
+        print_info "Endpoint information (from JSON-RPC):"
+        if [ -n "$CHAIN_ID" ]; then
+            if echo "$CHAIN_ID" | grep -qE "^0x[0-9a-fA-F]+$"; then
+                CHAIN_ID_DEC=$(printf "%d" "$CHAIN_ID" 2>/dev/null || echo "N/A")
+                print_info "  Chain ID:           $CHAIN_ID (decimal: $CHAIN_ID_DEC)"
+            else
+                print_info "  Chain ID:           $CHAIN_ID"
+            fi
+        fi
+        if [ -n "$BLOCK_NUMBER" ]; then
+            if echo "$BLOCK_NUMBER" | grep -qE "^0x[0-9a-fA-F]+$"; then
+                BLOCK_NUMBER_DEC=$(printf "%d" "$BLOCK_NUMBER" 2>/dev/null || echo "N/A")
+                print_info "  Latest block height: $BLOCK_NUMBER_DEC"
+            else
+                print_info "  Latest block height: $BLOCK_NUMBER"
+            fi
+        fi
+        [ -n "$BLOCK_TIMESTAMP" ] && print_info "  Latest block time:   $BLOCK_TIMESTAMP"
+        [ -n "$CLIENT_VERSION" ]  && print_info "  Client version:      $CLIENT_VERSION"
+    fi
     
     if [ $FAILED_TESTS -eq 0 ]; then
         echo -e "\n${GREEN}═══════════════════════════════════════════════════════════${NC}"

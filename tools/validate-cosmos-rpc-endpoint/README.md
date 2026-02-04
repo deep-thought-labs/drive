@@ -46,7 +46,7 @@ The script requires the following tools (usually available on Unix-like systems)
 
 ## Output
 
-The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the number of checks passed or failed.
+The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the number of checks passed or failed. When the endpoint responds correctly, the summary also shows **endpoint information** from Tendermint `/status`: chain ID, latest block height, and latest block time. Step 4 (Tendermint /status) reports **"Step 4 completed in Xs"** so you can see how long the request took. The script uses the shared `scripts/endpoint-validation-common.sh` (same practices as the gRPC and EVM validators).
 
 ## Exit codes
 
