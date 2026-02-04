@@ -16,11 +16,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../scripts/endpoint-validation-common.sh
-. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
+# shellcheck source=../common/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../common/endpoint-validation-common.sh"
 
 URL="${1:-}"
 TIMEOUT=10
+# Shorter timeout for step-5 discovery (plaintext/TLS/-insecure attempts); avoids ~20s when first attempts fail
+GRPC_PROBE_TIMEOUT=4
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
@@ -123,6 +125,7 @@ test_grpc_connectivity() {
     # Prefer grpcurl when available: it validates real gRPC (HTTP/2) and is what Hermes uses.
     # Raw TCP (nc) can fail on some networks/firewalls even when gRPC works.
     if command -v grpcurl >/dev/null 2>&1; then
+        print_info "Checking connectivity (timeout ${TIMEOUT}s per attempt: plaintext, TLS, TLS -insecure)..."
         if grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$PORT" list 2>/dev/null | head -n1 | grep -q .; then
             print_success "gRPC reachable on $HOST:$PORT (plaintext; grpcurl list OK)"
             return 0
@@ -142,6 +145,7 @@ test_grpc_connectivity() {
 
     # Fallback: raw TCP when grpcurl is not installed (nc or bash /dev/tcp).
     if command -v nc >/dev/null 2>&1; then
+        print_info "Checking port with nc (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" nc -z "$HOST" "$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST (TCP; install grpcurl for real gRPC check)"
         else
@@ -151,6 +155,7 @@ test_grpc_connectivity() {
             exit 1
         fi
     elif command -v timeout >/dev/null 2>&1; then
+        print_info "Checking port with /dev/tcp (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" bash -c "echo > /dev/tcp/$HOST/$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST (TCP; install grpcurl for real gRPC check)"
         else
@@ -188,6 +193,7 @@ test_ssl_certificate() {
     else
         CONNECT_STRING="$HOST:443"
     fi
+    print_info "Checking certificate (timeout ${TIMEOUT}s)..."
     SSL_OUTPUT=$(echo | timeout "$TIMEOUT" openssl s_client -connect "$CONNECT_STRING" -servername "$HOST" 2>&1)
     SSL_EXIT_CODE=$?
     if [ "$SSL_EXIT_CODE" -ne 0 ]; then
@@ -309,26 +315,31 @@ test_grpc_services() {
     fi
 
     step_timer_start
+    print_info "Probe timeout: ${GRPC_PROBE_TIMEOUT}s per attempt (discovery); ${TIMEOUT}s for list/GetNodeInfo once connected"
     for GRPC_PORT in $PORTS_TO_TRY; do
-        if [ -z "$PORT" ]; then
-            print_info "Trying $HOST:$GRPC_PORT (plaintext)..."
-        fi
-        # Try plaintext first (common for Cosmos gRPC on 9090)
-        if grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
-            print_success "gRPC server responds (plaintext) on $HOST:$GRPC_PORT; services listed"
-            grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
-                [ -n "$svc" ] && print_info "  $svc"
-            done
-            fetch_grpc_node_info "plaintext" "$HOST" "$GRPC_PORT"
-            step_timer_elapsed 5
-            return 0
+        # Port 443 is TLS by convention; skip plaintext to avoid a long timeout
+        if [ "$GRPC_PORT" != "443" ]; then
+            if [ -z "$PORT" ]; then
+                print_info "Trying $HOST:$GRPC_PORT (plaintext, timeout ${GRPC_PROBE_TIMEOUT}s)..."
+            fi
+            attempt_timer_start
+            if grpcurl -plaintext -connect-timeout "$GRPC_PROBE_TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+                print_success "gRPC server responds (plaintext) on $HOST:$GRPC_PORT; services listed"
+                grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
+                    [ -n "$svc" ] && print_info "  $svc"
+                done
+                fetch_grpc_node_info "plaintext" "$HOST" "$GRPC_PORT"
+                step_timer_elapsed 5
+                return 0
+            fi
+            print_info "  No response after $(attempt_timer_elapsed_seconds)s (timeout ${GRPC_PROBE_TIMEOUT}s), trying next..."
         fi
 
         if [ -z "$PORT" ] && [ "$GRPC_PORT" = "443" ]; then
-            print_info "Trying $HOST:443 (TLS)..."
+            print_info "Trying $HOST:443 (TLS, timeout ${GRPC_PROBE_TIMEOUT}s)..."
         fi
-        # Try TLS (no client cert)
-        if grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+        attempt_timer_start
+        if grpcurl -connect-timeout "$GRPC_PROBE_TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
             print_success "gRPC server responds (TLS) on $HOST:$GRPC_PORT; services listed"
             grpcurl -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
                 [ -n "$svc" ] && print_info "  $svc"
@@ -337,12 +348,13 @@ test_grpc_services() {
             step_timer_elapsed 5
             return 0
         fi
+        print_info "  No response after $(attempt_timer_elapsed_seconds)s (timeout ${GRPC_PROBE_TIMEOUT}s), trying TLS with -insecure..."
 
         if [ -z "$PORT" ] && [ "$GRPC_PORT" = "443" ]; then
-            print_info "Trying $HOST:443 (TLS, -insecure)..."
+            print_info "Trying $HOST:443 (TLS, -insecure, timeout ${GRPC_PROBE_TIMEOUT}s)..."
         fi
-        # Try TLS with -insecure (e.g. self-signed or cert validation failed)
-        if grpcurl -insecure -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
+        attempt_timer_start
+        if grpcurl -insecure -connect-timeout "$GRPC_PROBE_TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | head -n1 | grep -q .; then
             print_success "gRPC server responds (TLS, -insecure) on $HOST:$GRPC_PORT; services listed"
             print_warning "Certificate verification was skipped (-insecure); ensure the endpoint is trusted"
             grpcurl -insecure -connect-timeout "$TIMEOUT" "$HOST:$GRPC_PORT" list 2>/dev/null | while read -r svc; do
@@ -352,6 +364,7 @@ test_grpc_services() {
             step_timer_elapsed 5
             return 0
         fi
+        print_info "  No response after $(attempt_timer_elapsed_seconds)s (timeout ${GRPC_PROBE_TIMEOUT}s)."
     done
 
     step_timer_elapsed 5 " (no gRPC response)"

@@ -78,6 +78,18 @@ step_timer_elapsed() {
     [ "$elapsed" -gt 0 ] 2>/dev/null && print_info "Step ${step_num} completed in ${elapsed}s${suffix}"
 }
 
+# Per-attempt timing: call attempt_timer_start before an attempt (e.g. a grpcurl or curl that may timeout).
+# attempt_timer_elapsed_seconds echoes the seconds since the last attempt_timer_start (for use in messages).
+ATTEMPT_START=0
+attempt_timer_start() {
+    ATTEMPT_START=$(date +%s 2>/dev/null || echo 0)
+}
+attempt_timer_elapsed_seconds() {
+    local now
+    now=$(date +%s 2>/dev/null || echo 0)
+    echo $((now - ${ATTEMPT_START:-0}))
+}
+
 # Print standard warning when a step was skipped because no protocol or port was specified.
 # step_desc: short description (e.g. "the gRPC service check (step 5)")
 # host: hostname for examples (default: $HOST)

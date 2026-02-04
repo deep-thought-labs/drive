@@ -70,7 +70,7 @@ Using **HTTPS in the URL** (e.g. `https://grpc.infinitedrive.xyz`) is correct wh
 
 ## Notes
 
-- Default timeout is 10 seconds for connections.
+- Default timeout is 10 seconds for connections. Step 5 (gRPC discovery) uses a shorter connect timeout per attempt (4s) so that when plaintext or TLS-with-verification fail (e.g. HTTPS on 443 with a bad cert), the script quickly tries TLS with `-insecure` instead of waiting ~10s per attempt. On port 443, plaintext is skipped (TLS only).
 - **No default ports**: If no port is specified, the URL is left without a port so the **server** handles redirection. The script does not guess: for the optional gRPC probe it uses a port **only when the user explicitly passed a protocol** (`https://` or `http://`), and then only that protocol’s default (443 or 80). If the user passed **only a hostname** (no `https://`, no `http://`, no port), only the **gRPC service check** (step 5: list services, GetNodeInfo/GetLatestBlock) is skipped, so we do not assume a port. The rest of the script still runs: DNS resolution, optional CORS and security header checks (which may send HTTP/HTTPS requests to the host). To get gRPC validation and chain info with only a hostname, pass a protocol (e.g. `https://grpc.example.com`) so the script can use that protocol’s default port for the probe.
 - **TLS -insecure**: If TLS certificate validation fails, the script still tries `grpcurl -insecure` so the gRPC service can be validated (e.g. self-signed certs); a warning is shown when verification was skipped.
 - **Step timing**: Steps 4 (SSL) and 5 (gRPC service check) print **"Step N completed in Xs"** so you can see how long each step took and spot slow or failing connections.

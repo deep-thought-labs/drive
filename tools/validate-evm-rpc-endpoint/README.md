@@ -57,7 +57,7 @@ The script requires the following tools (usually available on Unix-like systems)
 
 ## Output
 
-The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the total number of individual checks run (e.g. 12) and how many passed or failed. That total is higher than 8 because each validation area can include multiple checks (e.g. four RPC methods, several CORS headers). Steps 4 (SSL), 5 (HTTP/HTTPS response), and 6 (RPC methods) report **"Step N completed in Xs"** so you can see timing. The script uses the shared `scripts/endpoint-validation-common.sh` (same practices as the gRPC and Cosmos RPC validators).
+The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the total number of individual checks run (e.g. 12) and how many passed or failed. That total is higher than 8 because each validation area can include multiple checks (e.g. four RPC methods, several CORS headers). Steps 4 (SSL), 5 (HTTP/HTTPS response), and 6 (RPC methods) report **"Step N completed in Xs"** so you can see timing. The script uses the shared `common/endpoint-validation-common.sh` (same practices as the gRPC and Cosmos RPC validators).
 
 ## Exit codes
 

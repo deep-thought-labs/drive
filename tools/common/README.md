@@ -19,6 +19,8 @@ Centralises **shared endpoint-handling practices** so validators only implement 
 - **`protocol_default_port <protocol>`** — Echoes the default port for the protocol (`https` → 443, `http` → 80). Use when the user specified a protocol but no port, so the probe uses only that default.
 - **`step_timer_start`** — Sets `ENDPOINT_STEP_START` to the current time. Call at the start of a step.
 - **`step_timer_elapsed <step_number> [suffix]`** — Prints “Step N completed in Xs” (and optional suffix) using `ENDPOINT_STEP_START`. Call at the end of a step for consistent timing across validators.
+- **`attempt_timer_start`** — Sets `ATTEMPT_START` to the current time. Call before an attempt that may timeout (e.g. grpcurl discovery).
+- **`attempt_timer_elapsed_seconds`** — Echoes the seconds since the last `attempt_timer_start`. Use in messages like "No response after Xs, trying next...".
 - **`print_incomplete_validation_hint <step_desc> [host] [port_examples] [intro_line]`** — Standard warning when a step was skipped because no protocol or port was specified. If `intro_line` is set, prints it and bullet lines (protocol/port); otherwise prints the summary-style block. Use in the skipped step and in the final summary.
 
 ### Usage
@@ -27,7 +29,7 @@ Each validator sources the script at the top:
 
 ```bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
+. "${SCRIPT_DIR}/../common/endpoint-validation-common.sh"
 ```
 
 Before calling `test_dns_resolution`, the validator must set `HOST`, and optionally `PASSED_TESTS`, `FAILED_TESTS`, `TOTAL_TESTS` (usually to 0).

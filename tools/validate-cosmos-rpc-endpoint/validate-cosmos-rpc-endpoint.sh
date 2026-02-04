@@ -16,8 +16,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../scripts/endpoint-validation-common.sh
-. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
+# shellcheck source=../common/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../common/endpoint-validation-common.sh"
 
 URL="${1:-}"
 TIMEOUT=10
@@ -149,6 +149,7 @@ test_network_connectivity() {
         return 0
     fi
     if command -v nc >/dev/null 2>&1; then
+        print_info "Checking port (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" nc -z "$HOST" "$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST"
         else
@@ -156,6 +157,7 @@ test_network_connectivity() {
             exit 1
         fi
     elif command -v timeout >/dev/null 2>&1; then
+        print_info "Checking port with /dev/tcp (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" bash -c "echo > /dev/tcp/$HOST/$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST"
         else
@@ -181,6 +183,7 @@ test_tendermint_status() {
         exit 1
     fi
 
+    print_info "Requesting GET /status (timeout ${TIMEOUT}s)..."
     RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$STATUS_URL" 2>/dev/null)
     if [ "$RESPONSE" != "200" ]; then
         print_error "GET /status returned HTTP $RESPONSE (expected 200)"
@@ -188,6 +191,7 @@ test_tendermint_status() {
         exit 1
     fi
 
+    print_info "Fetching response body (timeout ${TIMEOUT}s)..."
     BODY=$(curl -s --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$STATUS_URL" 2>/dev/null)
     if ! echo "$BODY" | grep -q '"result"'; then
         print_error "Response does not look like Tendermint RPC (no result field)"

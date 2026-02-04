@@ -17,8 +17,8 @@ set -uo pipefail
 # Don't use -e to allow error handling in functions
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=../scripts/endpoint-validation-common.sh
-. "${SCRIPT_DIR}/../scripts/endpoint-validation-common.sh"
+# shellcheck source=../common/endpoint-validation-common.sh
+. "${SCRIPT_DIR}/../common/endpoint-validation-common.sh"
 
 # Variables
 URL="${1:-}"
@@ -198,6 +198,7 @@ test_network_connectivity() {
     
     # Check if port is open using nc (netcat) or timeout
     if command -v nc >/dev/null 2>&1; then
+        print_info "Checking port (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" nc -z "$HOST" "$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST"
         else
@@ -205,7 +206,7 @@ test_network_connectivity() {
             exit 1
         fi
     elif command -v timeout >/dev/null 2>&1; then
-        # Fallback using bash built-in with /dev/tcp
+        print_info "Checking port with /dev/tcp (timeout ${TIMEOUT}s)..."
         if timeout "$TIMEOUT" bash -c "echo > /dev/tcp/$HOST/$PORT" 2>/dev/null; then
             print_success "Port $PORT accessible on $HOST"
         else
@@ -233,7 +234,8 @@ test_ssl_certificate() {
                 # No port, use hostname and let openssl use default port (443)
                 CONNECT_STRING="$HOST:443"
             fi
-            
+
+            print_info "Checking certificate (timeout ${TIMEOUT}s)..."
             # Get certificate information with better error handling
             SSL_OUTPUT=$(echo | timeout "$TIMEOUT" openssl s_client -connect "$CONNECT_STRING" -servername "$HOST" 2>&1)
             SSL_EXIT_CODE=$?
@@ -305,6 +307,7 @@ test_http_response() {
     print_header "5. HTTP/HTTPS Response"
     step_timer_start
     if command -v curl >/dev/null 2>&1; then
+        print_info "Requesting $URL (timeout ${TIMEOUT}s)..."
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$URL" 2>/dev/null || echo "000")
         
         if [ "$HTTP_CODE" != "000" ]; then
@@ -344,6 +347,7 @@ test_rpc_methods() {
     print_header "6. RPC Methods Validation"
     step_timer_start
     if command -v curl >/dev/null 2>&1; then
+        print_info "Calling RPC methods (timeout ${TIMEOUT}s per request): web3_clientVersion, eth_blockNumber, net_version, eth_chainId"
         # Test standard Ethereum/EVM JSON-RPC methods
         RPC_METHODS=("web3_clientVersion" "eth_blockNumber" "net_version" "eth_chainId")
         

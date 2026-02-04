@@ -1,6 +1,6 @@
-# Drive Scripts
+# Drive Ops
 
-Utility scripts for managing Drive services.
+Utility scripts for managing Drive services (update, future Encic and TUI).
 
 ## update-drive.sh
 
@@ -17,14 +17,14 @@ Automatically updates all Drive services by:
 From the repository root:
 
 ```bash
-./scripts/update-drive.sh
+./ops/update-drive.sh
 ```
 
 Or from anywhere:
 
 ```bash
 cd /path/to/drive
-./scripts/update-drive.sh
+./ops/update-drive.sh
 ```
 
 ### What it does
