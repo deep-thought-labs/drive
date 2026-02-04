@@ -1,8 +1,8 @@
 # EVM RPC Endpoint Validation Script
 
-This script validates **EVM RPC endpoints only** — i.e. nodes that expose the standard Ethereum/EVM JSON-RPC interface (e.g. for MetaMask, dApps, or public RPC usage). It does **not** validate other RPC protocols such as Cosmos (e.g. Tendermint RPC, gRPC, REST) or other non-EVM endpoints; use protocol-specific tools for those.
+Nodes that expose the Ethereum/EVM JSON-RPC interface allow wallets, dApps, and scripts to read chain data (balances, state, blocks) and send transactions. This script checks that such an endpoint is reachable and correctly configured. The RPC service typically listens on a dedicated port (e.g. **8545**).
 
-It runs a set of checks to verify that an EVM RPC endpoint is working correctly and is properly configured for public use.
+Other endpoint types (Tendermint RPC, Cosmos gRPC) have their own validators in this directory.
 
 ## What is validated
 
@@ -55,15 +55,7 @@ The script requires the following tools (usually available on Unix-like systems)
 
 ## Output
 
-The script uses:
-
-- **Color codes** for readability:
-  - ✓ Green: Passed checks
-  - ✗ Red: Failed checks
-  - ⚠ Yellow: Warnings
-  - ℹ Blue: Information
-
-- A **final summary** with the total number of individual checks run (e.g. 12) and how many passed or failed. This total is higher than 8 because each validation area can include multiple checks (e.g. four RPC methods, several CORS headers).
+The script uses color codes for readability (✓ green passed, ✗ red failed, ⚠ yellow warnings, ℹ blue info) and a final summary with the total number of individual checks run (e.g. 12) and how many passed or failed. That total is higher than 8 because each validation area can include multiple checks (e.g. four RPC methods, several CORS headers).
 
 ## Exit codes
 
@@ -72,21 +64,14 @@ The script uses:
 
 ## Compatibility
 
-The script is compatible with:
-
-- Linux
-- macOS
-- BSD
-- Any Unix-like system with bash 4.0+
+The script is compatible with Linux, macOS, BSD, and any Unix-like system with bash 4.0+.
 
 ## Notes
 
-- The script uses a default timeout of 10 seconds for all connections.
-- If a required tool is not available, the script skips that specific check and prints a warning.
-- The script is designed to be robust and continue running even if some checks fail (except for critical validations).
-- **Automatic normalization**: If no protocol (`http://` or `https://`) is provided, the script tries to detect it by testing HTTPS first, then HTTP.
-- **No default ports**: If no port is specified, the URL is left without a port. The script does **not** add default ports (443/80), so the server or load balancer can handle redirections correctly.
-- The script handles server-side redirections appropriately.
+- Default timeout is 10 seconds for connections.
+- If a required tool is not available, the script skips that check and prints a warning.
+- **No default ports**: If no port is specified, the URL is left without a port so the server or load balancer can handle redirections.
+- If no protocol is provided, the script tries to detect HTTPS first, then HTTP.
 
 ## Authorship and rights
 

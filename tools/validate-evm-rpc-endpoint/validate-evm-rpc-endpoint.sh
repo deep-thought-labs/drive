@@ -9,8 +9,8 @@
 # Usage: ./validate-evm-rpc-endpoint.sh <URL>
 # Example: ./validate-evm-rpc-endpoint.sh https://rpc.example.com:8545
 #
-# Validates EVM (Ethereum) JSON-RPC endpoints only. Not for Cosmos or other
-# RPC protocols.
+# Validates EVM (Ethereum) JSON-RPC endpoints only.
+# Not for Cosmos Tendermint RPC or gRPC; use the other tools in tools/ for those.
 ###############################################################################
 
 set -uo pipefail
