@@ -17,14 +17,14 @@ Automatically updates all Drive services by:
 From the repository root:
 
 ```bash
-./scripts/update-drive.sh
+./ops/update-drive.sh
 ```
 
 Or from anywhere:
 
 ```bash
 cd /path/to/drive
-./scripts/update-drive.sh
+./ops/update-drive.sh
 ```
 
 ### What it does
@@ -35,7 +35,7 @@ cd /path/to/drive
    - Restores only tracked files to their committed state
    - **Preserves all untracked files** (including persistent-data)
    - Does NOT delete any untracked files to prevent data loss
-4. **Repository Update**: Pulls latest changes from the current branch
+4. **Repository Update**: Pulls latest changes from the current branch. If you are in **detached HEAD** (e.g. after `git checkout <commit>`), the script detects it, finds a branch that contains your current commit (preferring `main`, then `dev`, then `master`), checks out that branch and runs `git pull`. If none of those branches contain the commit, it lists which branches do so you can run the update manually.
 5. **Service Restart**: Restarts only the services that were running before the update
 
 ### Features
@@ -66,9 +66,9 @@ Found 1 running service(s)
 ⏹️  Stopping node0-infinite...
 ✅ node0-infinite stopped
 
-📋 Step 3: Cleaning git changes...
+📋 Step 3: Cleaning git changes (tracked files only)...
 
-✅ No git changes to clean
+✅ No changes in tracked files to restore
 
 📋 Step 4: Updating repository (git pull)...
 
@@ -107,3 +107,4 @@ All done! 🎉
 - Services must have valid `docker-compose.yml` and `drive.sh` files
 - The script preserves the state of which services were running
 - **IMPORTANT**: The script only restores tracked files. All untracked files (including data in `persistent-data/`) are preserved to prevent data loss
+- **Detached HEAD**: If you ran `git checkout <commit-hash>` to test an older version, you are not "on a branch". The script will try to switch you back to `main` (or `dev`/`master` if applicable), pull the latest changes, and leave you on the branch tip so the next update works normally

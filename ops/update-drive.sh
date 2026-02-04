@@ -156,8 +156,35 @@ cd "$REPO_ROOT"
 # Check if we're on a branch
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
+# If detached HEAD, try to checkout the branch that contains current commit (e.g. main or dev)
 if [ -z "$CURRENT_BRANCH" ]; then
-    echo -e "${YELLOW}⚠️  Not on a git branch. Skipping git pull.${NC}"
+    echo -e "${YELLOW}⚠️  Detected detached HEAD (not on a branch).${NC}"
+    UPDATED=0
+    # Find a branch that contains the current commit; prefer main, then dev
+    for preferred in main dev master; do
+        if git branch -a --contains HEAD 2>/dev/null | grep -qE "(\s|/)${preferred}$"; then
+            echo -e "${CYAN}Checking out ${preferred} and pulling latest...${NC}"
+            if git checkout "$preferred" 2>/dev/null && git pull origin "$preferred" 2>/dev/null; then
+                echo -e "${GREEN}✅ Switched to ${preferred} and repository updated successfully${NC}"
+                UPDATED=1
+            else
+                echo -e "${RED}❌ Error: Failed to checkout/pull ${preferred}. You may need to run: git checkout <branch> && git pull${NC}"
+            fi
+            break
+        fi
+    done
+    if [ "$UPDATED" -eq 0 ]; then
+        # No preferred branch contained HEAD or pull failed; list branches that do
+        CONTAINING_BRANCHES=$(git branch -a --contains HEAD 2>/dev/null | sed 's/^[* ]*//;s/remotes\/origin\///' | sort -u | grep -v 'HEAD' | head -5)
+        if [ -n "$CONTAINING_BRANCHES" ]; then
+            echo -e "${CYAN}Branches containing current commit:${NC}"
+            echo "$CONTAINING_BRANCHES" | while read b; do echo "   - $b"; done
+            echo -e "${YELLOW}Run manually: git checkout <branch> && git pull origin <branch>${NC}"
+        else
+            echo -e "${YELLOW}Not on a branch and no remote branch contains this commit. Skipping git pull.${NC}"
+            echo -e "${CYAN}To update: git checkout main && git pull  (or your usual branch)${NC}"
+        fi
+    fi
 else
     echo -e "${CYAN}Pulling latest changes from ${CURRENT_BRANCH}...${NC}"
     
