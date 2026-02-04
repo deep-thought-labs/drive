@@ -194,7 +194,7 @@ test_ssl_certificate() {
         if command -v curl >/dev/null 2>&1 && curl -s -o /dev/null -w "%{http_code}" --max-time 3 "https://$HOST${PORT:+:$PORT}" >/dev/null 2>&1; then
             print_warning "Could not validate certificate with OpenSSL, but HTTPS connection works"
         else
-            print_error "Could not validate SSL certificate"
+            print_warning "Could not validate certificate with OpenSSL (gRPC endpoints often do not respond to HTTP GET; step 5 will try gRPC over TLS and may succeed with -insecure)"
         fi
         step_timer_elapsed 4
         return 0
@@ -205,7 +205,7 @@ test_ssl_certificate() {
             print_warning "SSL certificate present but could not extract detailed information"
             print_info "HTTPS connection works correctly"
         else
-            print_error "Could not validate SSL certificate"
+            print_warning "Could not validate certificate with OpenSSL (gRPC endpoints often do not respond to HTTP GET; step 5 will try gRPC over TLS and may succeed with -insecure)"
         fi
         step_timer_elapsed 4
         return 0
@@ -376,7 +376,7 @@ build_http_check_url() {
 }
 
 test_cors_headers() {
-    print_header "6. CORS Headers (optional, if HTTP endpoint responds)"
+    print_header "6. CORS Headers (optional; only if endpoint responds to HTTP/REST)"
     if ! command -v curl >/dev/null 2>&1; then
         print_warning "curl not available, skipping CORS check"
         return 0
@@ -392,7 +392,7 @@ test_cors_headers() {
         "$CHECK_URL" 2>/dev/null)
     ALL_HEADERS=$(echo -e "${OPTIONS_RESPONSE}\n${POST_RESPONSE}")
     if ! echo "$ALL_HEADERS" | grep -qi "HTTP/"; then
-        print_info "Endpoint does not respond to HTTP OPTIONS/POST (gRPC-only); CORS not applicable"
+        print_info "Endpoint does not respond to HTTP/REST (OPTIONS/POST); gRPC-only, CORS not applicable"
         return 0
     fi
     CORS_HEADERS=$(echo "$ALL_HEADERS" | grep -i "access-control" || echo "")
@@ -412,7 +412,7 @@ test_cors_headers() {
 }
 
 test_security_headers() {
-    print_header "7. Security Headers (optional, if HTTP endpoint responds)"
+    print_header "7. Security Headers (optional; only if endpoint responds to HTTP/REST)"
     if ! command -v curl >/dev/null 2>&1; then
         print_warning "curl not available, skipping security headers check"
         return 0
@@ -420,7 +420,7 @@ test_security_headers() {
     CHECK_URL=$(build_http_check_url)
     HEADERS=$(curl -s -I --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" "$CHECK_URL" 2>/dev/null)
     if ! echo "$HEADERS" | grep -qi "HTTP/"; then
-        print_info "Endpoint does not respond to HTTP (gRPC-only); security headers not applicable"
+        print_info "Endpoint does not respond to HTTP/REST; gRPC-only, security headers not applicable"
         return 0
     fi
     SECURITY_HEADERS=("X-Frame-Options" "X-Content-Type-Options" "X-XSS-Protection" "Strict-Transport-Security")
