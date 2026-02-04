@@ -56,6 +56,16 @@ print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
 
+# Print install instructions for grpcurl (macOS and Ubuntu) when the tool is missing.
+print_grpcurl_install_hint() {
+    echo -e "${YELLOW}  To install grpcurl:${NC}"
+    echo -e "  ${BLUE}macOS (Homebrew):${NC}  brew install grpcurl"
+    echo -e "  ${BLUE}Ubuntu / Debian:${NC}  sudo snap install grpcurl"
+    echo -e "  ${BLUE}  (if not on stable):${NC} sudo snap install --edge grpcurl"
+    echo -e "  ${BLUE}  (or with Go):${NC}   go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"
+    echo -e "  ${BLUE}  (then add to PATH):${NC} export PATH=\"\$PATH:\$HOME/go/bin\""
+}
+
 validate_usage() {
     if [ -z "$URL" ]; then
         echo -e "${RED}Error: URL or host:port is required${NC}"
@@ -143,22 +153,45 @@ test_grpc_connectivity() {
         print_info "gRPC check will use protocol default (e.g. 443 for HTTPS) if applicable"
         return 0
     fi
+
+    # Prefer grpcurl when available: it validates real gRPC (HTTP/2) and is what Hermes uses.
+    # Raw TCP (nc) can fail on some networks/firewalls even when gRPC works.
+    if command -v grpcurl >/dev/null 2>&1; then
+        if grpcurl -plaintext -connect-timeout "$TIMEOUT" "$HOST:$PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC reachable on $HOST:$PORT (plaintext; grpcurl list OK)"
+            return 0
+        fi
+        if grpcurl -connect-timeout "$TIMEOUT" "$HOST:$PORT" list 2>/dev/null | head -n1 | grep -q .; then
+            print_success "gRPC reachable on $HOST:$PORT (TLS; grpcurl list OK)"
+            return 0
+        fi
+        print_error "grpcurl could not reach gRPC on $HOST:$PORT (plaintext or TLS)"
+        exit 1
+    fi
+
+    # Fallback: raw TCP when grpcurl is not installed (nc or bash /dev/tcp).
     if command -v nc >/dev/null 2>&1; then
         if timeout "$TIMEOUT" nc -z "$HOST" "$PORT" 2>/dev/null; then
-            print_success "Port $PORT accessible on $HOST"
+            print_success "Port $PORT accessible on $HOST (TCP; install grpcurl for real gRPC check)"
         else
             print_error "Port $PORT not accessible on $HOST"
+            print_info "TCP probe may fail where gRPC works; install grpcurl for a proper gRPC check:"
+            print_grpcurl_install_hint
             exit 1
         fi
     elif command -v timeout >/dev/null 2>&1; then
         if timeout "$TIMEOUT" bash -c "echo > /dev/tcp/$HOST/$PORT" 2>/dev/null; then
-            print_success "Port $PORT accessible on $HOST"
+            print_success "Port $PORT accessible on $HOST (TCP; install grpcurl for real gRPC check)"
         else
             print_error "Port $PORT not accessible on $HOST"
+            print_info "Install grpcurl for a proper gRPC check:"
+            print_grpcurl_install_hint
             exit 1
         fi
     else
-        print_warning "nc or bash /dev/tcp not available, skipping connectivity check"
+        print_warning "grpcurl, nc, and bash /dev/tcp not available; skipping connectivity check"
+        print_info "Install grpcurl to validate gRPC endpoints:"
+        print_grpcurl_install_hint
     fi
 }
 
@@ -234,6 +267,8 @@ test_grpc_services() {
     print_header "5. gRPC Service Check (optional)"
     if ! command -v grpcurl >/dev/null 2>&1; then
         print_warning "grpcurl not installed; skipping gRPC service list"
+        print_info "Install grpcurl to list gRPC services:"
+        print_grpcurl_install_hint
         return 0
     fi
 

@@ -8,7 +8,7 @@ Other endpoint types (EVM RPC, Tendermint RPC) have their own validators in this
 
 1. **URL / host:port normalization and validation** — Extracts host and port. **No default port is added** when omitted; the server or load balancer handles routing.
 2. **DNS resolution** — Hostname resolves correctly.
-3. **gRPC port connectivity** — Port is reachable (skipped when no port is specified; the optional gRPC probe may then try a standard port for the check only).
+3. **gRPC port connectivity** — If **grpcurl** is installed, the script uses it to verify that the gRPC server responds (`grpcurl list`); this is the recommended check. If grpcurl is not available, a raw TCP probe (nc or bash /dev/tcp) is used as fallback; that can fail on some networks or firewalls even when gRPC works, so installing grpcurl is recommended.
 4. **SSL certificate (when HTTPS)** — If the URL uses HTTPS, the certificate is validated with OpenSSL (validity and expiration). Skipped for HTTP.
 5. **gRPC service list (optional)** — If `grpcurl` is installed, tries to list services (plaintext or TLS) to confirm a gRPC server is present.
 6. **CORS headers (optional)** — If the same host/port responds to HTTP OPTIONS or POST, CORS headers are reported. Many gRPC-only endpoints do not respond to HTTP; in that case the check is skipped and no failure is reported.
@@ -16,13 +16,13 @@ Other endpoint types (EVM RPC, Tendermint RPC) have their own validators in this
 
 ## Requirements
 
-The script requires the following tools (usually available on Unix-like systems):
+The script uses the following tools (when available):
 
-- `nc` (netcat) or `/dev/tcp` support — for port connectivity (optional when port is specified)
-- `openssl` — for SSL certificate validation when using HTTPS
-- `curl` — for optional CORS and security header checks (when the endpoint responds to HTTP)
-- `grpcurl` — optional; enables gRPC service listing for a stronger check
-- `host` or `nslookup` — for DNS resolution (optional)
+- **grpcurl** — **Recommended.** When installed, step 3 (connectivity) and step 5 (service list) use it to validate the gRPC endpoint. Without it, step 3 falls back to a raw TCP check (nc or /dev/tcp), which can fail even when gRPC works (e.g. on macOS or behind some firewalls). Install: `brew install grpcurl` (macOS); on Ubuntu/Debian: `sudo snap install grpcurl` or, if that package is only on the edge channel, `sudo snap install --edge grpcurl`; or see [grpcurl releases](https://github.com/fullstorydev/grpcurl/releases).
+- `nc` (netcat) or `/dev/tcp` — Fallback for port connectivity when grpcurl is not installed.
+- `openssl` — For SSL certificate validation when using HTTPS.
+- `curl` — For optional CORS and security header checks.
+- `host`, `dig`, or `nslookup` — For DNS resolution.
 
 ## Usage
 
