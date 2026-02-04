@@ -1,0 +1,22 @@
+services:
+  relayer-hermes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Hermes version: official Linux binary from GitHub releases (no build). See https://github.com/informalsystems/hermes/releases
+        HERMES_VERSION: "1.13.3"
+    image: drive-relayer-hermes:latest
+    container_name: relayer-hermes
+    restart: unless-stopped
+
+    # This service does not expose any ports (relayer only makes outbound connections to chain RPC/gRPC).
+    # See ../../docs/PLANEACION_SERVICIO_IBC_RELAYER.md for details.
+
+    volumes:
+      # Config and keys: edit config.toml and add keys under persistent-data/
+      # Hermes expects config.toml and keys/ inside $HOME/.hermes
+      - ./persistent-data:/root/.hermes
+
+    # Optional: override command for one-off commands (e.g. hermes keys add, hermes health check)
+    # command: ["start"]
