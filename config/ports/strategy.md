@@ -52,7 +52,7 @@ Each service is assigned a **Service Number** starting from 0:
 - **Service #1** = Testnet
 - **Service #2** = Creative Network
 - **Service #3** = QOM Network
-- **relayer-hermes** = IBC Relayer (no expone puertos; solo conexiones salientes)
+- **relayer-hermes** = IBC Relayer (does not expose ports; outbound connections only)
 - **Service #4+** = Future services (follow standard offset formula)
 - And so on...
 

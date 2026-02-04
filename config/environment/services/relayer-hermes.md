@@ -2,9 +2,9 @@
 
 **Service Name:** `relayer-hermes`
 
-Este servicio no utiliza variables de entorno obligatorias. La configuración se hace mediante:
+This service does not use any required environment variables. Configuration is done via:
 
-- **`persistent-data/config.toml`** — cadenas, RPC, gRPC, key names, etc.
-- **`persistent-data/keys/`** — claves del relayer por cadena (añadidas con `hermes keys add`).
+- **`persistent-data/config.toml`** — chains, RPC, gRPC, key names, etc.
+- **`persistent-data/keys/`** — relayer keys per chain (added with `hermes keys add`).
 
-Opcionalmente se puede sobrescribir la ruta del config pasando argumentos a Hermes (p. ej. `--config /ruta/config.toml` vía `command` en `docker-compose.yml`).
+You can optionally override the config path by passing arguments to Hermes (e.g. `--config /path/config.toml` via `command` in `docker-compose.yml`).
