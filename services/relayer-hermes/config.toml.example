@@ -9,19 +9,25 @@ log_level = 'info'
 # id = Official chain ID (e.g. cosmoshub-4, osmosis-1), not a local alias
 # account_prefix = Bech32 address prefix for this chain (cosmos, osmo, infinite...)
 # store_prefix = Usually "ibc" on Cosmos SDK chains
+# event_source = How Hermes receives IBC events: push (WebSocket) or pull (polling). URL must match RPC host.
+# gas_price = Fee for relay txs; use the chain's native denom (e.g. uatom, stake, uosmo) and a suitable price.
 [[chains]]
 id = 'chain-a'
 rpc_addr = 'http://localhost:26657'
 grpc_addr = 'http://localhost:9090'
+event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_delay = '500ms' }
 account_prefix = 'cosmos'
 key_name = 'relayer-chain-a'
 store_prefix = 'ibc'
+gas_price = { price = 0.001, denom = 'stake' }
 
 # ——— Chain B ———
 [[chains]]
 id = 'chain-b'
 rpc_addr = 'http://localhost:26667'
 grpc_addr = 'http://localhost:9090'
+event_source = { mode = 'push', url = 'ws://localhost:26667/websocket', batch_delay = '500ms' }
 account_prefix = 'cosmos'
 key_name = 'relayer-chain-b'
 store_prefix = 'ibc'
+gas_price = { price = 0.001, denom = 'stake' }

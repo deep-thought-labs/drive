@@ -1,6 +1,6 @@
-# Infinite Testnet Service
+# QOM Network Service (node3-qom)
 
-Service configuration for running an Infinite Drive blockchain node on testnet. Uses Docker Compose with the `drive.sh` wrapper script for easy container management.
+Service configuration for running a QOM blockchain node (`qom_766-1`). Uses Docker Compose with the `drive.sh` wrapper script for easy container management.
 
 ## Quick Start
 
@@ -52,29 +52,48 @@ docker compose up -d
 
 ## Network Configuration
 
-This service is configured for **Infinite Testnet**:
+This service is configured for **QOM** (`qom_766-1`). Ports (service #3, +30 offset):
 
-- **Cosmos Chain ID**: `infinite_421018001-1`
-- **EVM Chain ID**: `421018001`
-- **Ports** (see [Port Allocation Strategy](../../docs/PORT_ALLOCATION.md) for details): 
-  - P2P: `26666:26656` (host:container)
-  - RPC: `26667:26657` (host:container)
+- P2P: `26686:26656`
+- RPC: `26687:26657`
+- gRPC (optional): `9120:9090` — enable in `docker-compose.yml` if you want to use this node as RPC/gRPC for Hermes or other clients.
 
-**Port Allocation:**
-- Mainnet uses standard ports: `26656` (P2P), `26657` (RPC)
-- Testnet uses alternative ports: `26666` (P2P), `26667` (RPC) - +10 from standard
-- This allows running both networks simultaneously without conflicts
+---
 
-**Note:** If you only run testnet (not mainnet), you can change the ports in `docker-compose.yml` to `26656:26656` and `26657:26657` to use standard ports.
+## Exponer este nodo como RPC (para Hermes u otros clientes)
 
-## Important: Configuration Required
+Para usar **tu propio nodo QOM** como RPC (y gRPC) en lugar de un endpoint público, edita solo lo siguiente.
 
-Before using this service, you need to update the following in `docker-compose.yml`:
+### 1. `docker-compose.yml` (puertos)
 
-1. **NODE_GENESIS_URL**: Update with the official testnet genesis URL
-2. **NODE_P2P_SEEDS**: Update with official testnet seed nodes
+- **RPC** — Ya está mapeado: `26687:26657`. No hace falta cambiarlo.
+- **gRPC** — Hermes necesita gRPC. Descomenta la línea de gRPC en `ports:`:
+  ```yaml
+  - "9120:9090"    # gRPC
+  ```
+  Así el host expone el puerto **9120** (gRPC) además del **26687** (RPC).
 
-These are marked with `TODO` comments in the configuration file.
+### 2. Archivos de config del nodo (después del primer arranque)
+
+Los genera el contenedor en `persistent-data/` al inicializar. Revisa o edita **solo si** el RPC/gRPC no son accesibles desde fuera del contenedor:
+
+| Archivo | Sección / clave | Valor a contemplar |
+|--------|-------------------|--------------------|
+| `persistent-data/config/config.toml` | `[rpc]` → `laddr` | Debe escuchar en todas las interfaces: `tcp://0.0.0.0:26657`. Si aparece `127.0.0.1`, cámbialo a `0.0.0.0` para que Docker pueda mapear el puerto. |
+| `persistent-data/config/app.toml` | `[grpc]` → `enable` | `true` para activar gRPC. |
+| `persistent-data/config/app.toml` | `[grpc]` → `address` | Debe ser `0.0.0.0:9090` (no solo `localhost`) para que sea accesible desde el host. |
+
+Tras editar `config.toml` o `app.toml`, reinicia el servicio: `./drive.sh restart`.
+
+### 3. Cómo usar esta URL en Hermes
+
+- **Desde la misma máquina:**  
+  `rpc_addr = 'http://127.0.0.1:26687'`  
+  `grpc_addr = 'http://127.0.0.1:9120'`  
+  Para WebSocket (event_source push): `url = 'ws://127.0.0.1:26687/websocket'`.
+
+- **Desde otro equipo (o relayer en otro contenedor):**  
+  Sustituye `127.0.0.1` por la IP o el hostname del servidor donde corre node3-qom (y asegura que los puertos 26687 y 9120 estén abiertos en el firewall si aplica).
 
 ## Files
 

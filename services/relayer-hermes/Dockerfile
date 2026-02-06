@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 # Download official Hermes Linux binary from GitHub releases (no compilation).
 # TARGETARCH is set by Docker when building (e.g. linux/amd64 -> amd64, linux/arm64 -> arm64).
 # Hermes uses x86_64 / aarch64 in tarball names; we map amd64->x86_64, arm64->aarch64 for Apple Silicon.
-ARG HERMES_VERSION=1.13.3
+ARG HERMES_VERSION=1.8.2
 ARG TARGETARCH
 RUN set -eux; \
     case "${TARGETARCH}" in \

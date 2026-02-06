@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         # Hermes version: official Linux binary from GitHub releases (no build). See https://github.com/informalsystems/hermes/releases
-        HERMES_VERSION: "1.13.3"
+        # 1.8.2: supports SDK >=0.45,<0.51 and IBC-Go 6.1.x. QOM (IBC-Go 6.1.0) is healthy; Infinite Testnet (SDK 0.54) shows a warning but Hermes still starts and may relay. Hermes 1.13.x requires IBC-Go >=6.3.1 so QOM would fail; and SDK 0.54 is not yet in 1.13's supported range (<0.54). No single version supports both chains officially.
+        HERMES_VERSION: "1.8.2"
     image: drive-relayer-hermes:latest
     container_name: relayer-hermes
     restart: unless-stopped
