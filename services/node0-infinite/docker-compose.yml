@@ -39,13 +39,13 @@ services:
       ##################################################################################
       NODE_CHAIN_ID: "infinite_421018-1"
       NODE_EVM_CHAIN_ID: "421018"
-      NODE_GENESIS_URL: "" # To be updated
+      NODE_GENESIS_URL: "https://assets.infinitedrive.xyz/mainnet/genesis.json"
 
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
-      NODE_P2P_SEEDS: "71a48afac2463a77bc5825d78dd83299174c4a6c@66.70.178.128:26656"
-      # NODE_PERSISTENT_PEERS: ""
+      NODE_P2P_SEEDS: "fe304bbda1a243eb2bd30a4558923b39d04ca5eb@server-xenia88.infinitedrive.xyz:26656"
+      NODE_PERSISTENT_PEERS: "fe304bbda1a243eb2bd30a4558923b39d04ca5eb@server-xenia88.infinitedrive.xyz:26656"
       # NODE_P2P_EXTERNAL_ADDRESS: "" 
 
     ### End environment variables
