@@ -12,22 +12,23 @@ log_level = 'info'
 # event_source = How Hermes receives IBC events: push (WebSocket) or pull (polling). URL must match RPC host.
 # gas_price = Fee for relay txs; use the chain's native denom (e.g. uatom, stake, uosmo) and a suitable price.
 [[chains]]
-id = 'chain-a'
-rpc_addr = 'http://localhost:26657'
-grpc_addr = 'http://localhost:9090'
-event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_delay = '500ms' }
-account_prefix = 'cosmos'
-key_name = 'relayer-chain-a'
+id = 'infinite_421018001-1'
+rpc_addr = 'https://comet-rpc-testnet.infinitedrive.xyz'
+grpc_addr = 'https://grpc-testnet.infinitedrive.xyz:443'
+event_source = { mode = 'push', url = 'wss://comet-rpc-testnet.infinitedrive.xyz/websocket', batch_delay = '500ms' }
+account_prefix = 'infinite'
+key_name = 'relayer-testnet'
 store_prefix = 'ibc'
-gas_price = { price = 0.001, denom = 'stake' }
+gas_price = { price = 0.001, denom = 'tdrop' }
 
 # ——— Chain B ———
 [[chains]]
-id = 'chain-b'
-rpc_addr = 'http://localhost:26667'
-grpc_addr = 'http://localhost:9090'
-event_source = { mode = 'push', url = 'ws://localhost:26667/websocket', batch_delay = '500ms' }
-account_prefix = 'cosmos'
-key_name = 'relayer-chain-b'
+id = 'qom_766-1'
+rpc_addr = 'https://rpc.foxxone.one'
+grpc_addr = 'http://rpc.foxxone.one:9090'
+event_source = { mode = 'push', url = 'wss://rpc.foxxone.one/websocket', batch_delay = '500ms' }
+account_prefix = 'qom'
+key_name = 'relayer-qom'
 store_prefix = 'ibc'
-gas_price = { price = 0.001, denom = 'stake' }
+gas_price = { price = 10, denom = 'aqom' }
+address_type = { derivation = 'ethermint', proto_type = { pk_type = '/ethermint.crypto.v1.ethsecp256k1.PubKey' } }
