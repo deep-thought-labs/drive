@@ -14,12 +14,13 @@ log_level = 'info'
 [[chains]]
 id = 'infinite_421018001-1'
 rpc_addr = 'https://comet-rpc-testnet.infinitedrive.xyz'
-grpc_addr = 'https://grpc-testnet.infinitedrive.xyz:443'
+grpc_addr = 'https://grpc-testnet.infinitedrive.xyz'
 event_source = { mode = 'push', url = 'wss://comet-rpc-testnet.infinitedrive.xyz/websocket', batch_delay = '500ms' }
 account_prefix = 'infinite'
 key_name = 'relayer-testnet'
 store_prefix = 'ibc'
 gas_price = { price = 0.001, denom = 'tdrop' }
+packet_filter = { policy = 'allow', list = [ ['transfer', 'channel-0'] ] }
 
 # ——— Chain B ———
 [[chains]]
@@ -32,3 +33,4 @@ key_name = 'relayer-qom'
 store_prefix = 'ibc'
 gas_price = { price = 10, denom = 'aqom' }
 address_type = { derivation = 'ethermint', proto_type = { pk_type = '/ethermint.crypto.v1.ethsecp256k1.PubKey' } }
+packet_filter = { policy = 'allow', list = [ ['transfer', 'channel-1'] ] }
