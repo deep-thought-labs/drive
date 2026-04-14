@@ -1,7 +1,7 @@
 services:
   infinite-creative:
     # Core service settings (image, name, user, restart) - not expected to be modified by users
-    image: deepthoughtlabs/infinite-drive:v0.1.14
+    image: deepthoughtlabs/infinite-drive:v0.2.0
     container_name: infinite-creative
     restart: unless-stopped
 
@@ -39,12 +39,12 @@ services:
       ##################################################################################
       NODE_CHAIN_ID: "infinite_421018002-1"
       NODE_EVM_CHAIN_ID: "421018002"
-      NODE_GENESIS_URL: "" # To be updated
+      NODE_GENESIS_URL: "https://assets.infinitedrive.xyz/creative/genesis.json" 
       
       ##################################################################################
       #                           Network P2P Configuration                            #
       ##################################################################################
-      NODE_P2P_SEEDS: ""
+      NODE_P2P_SEEDS: "e8e7b5f008a59e72ac624cde9607a90178e9cc14@server-xenia.infinitedrive.xyz:26676"
       # NODE_PERSISTENT_PEERS: ""
       # NODE_P2P_EXTERNAL_ADDRESS: "" 
 
